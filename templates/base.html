@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriTrace{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .hero-green {
+            background-color: #3D8361;
+            color: #F9F9F9;
+        }
+        .btn-primary {
+            background-color: #1F3A1A;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2B5327;
+        }
+        .nav-link {
+            color: #EAD7A7;
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
