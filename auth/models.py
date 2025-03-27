@@ -27,7 +27,7 @@ class Farmer(models.Model):
 
 # Buyer inherits from Merchant
 class Buyer(Merchant):
-  
+    location = models.CharField(max_length=255)
     def __str__(self):
         return f"Buyer: {self.user.username}"
 
