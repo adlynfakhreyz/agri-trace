@@ -1,0 +1,237 @@
+{% extends "main_base.html" %}
+
+{% block title %}Payment - AgriTrace{% endblock %}
+{% block page_title %}Payment{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Progress Steps -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <span class="text-sm font-medium mt-2 text-green-600">Cart</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-green-600"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <span class="text-sm font-medium mt-2 text-green-600">Checkout</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-green-600"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                    <span class="font-semibold">3</span>
+                </div>
+                <span class="text-sm font-medium mt-2 text-green-600">Payment</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-gray-300"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
+                    <span class="font-semibold">4</span>
+                </div>
+                <span class="text-sm font-medium mt-2 text-gray-600">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Payment Information -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-8 rounded-lg shadow-md mb-6">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Payment Method</h2>
+                
+                <form method="post" id="payment-form">
+                    {% csrf_token %}
+                    
+                    <!-- Credit Card Payment -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-4">
+                            <input id="credit_card" type="radio" name="payment_method" value="credit_card" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" checked>
+                            <label for="credit_card" class="ml-2 text-gray-700 font-medium">
+                                Credit or Debit Card
+                            </label>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                            <div class="mb-4">
+                                <label for="card_number" class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                                <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label for="expiry_date" class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                                    <input type="text" id="expiry_date" name="expiry_date" placeholder="MM / YY" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                </div>
+                                <div>
+                                    <label for="cvc" class="block text-sm font-medium text-gray-700 mb-1">CVC</label>
+                                    <input type="text" id="cvc" name="cvc" placeholder="123" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="card_name" class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
+                                <input type="text" id="card_name" name="card_name" placeholder="John Doe" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Other Payment Methods (Disabled for now) -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2 opacity-50">
+                            <input id="paypal" type="radio" name="payment_method" value="paypal" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" disabled>
+                            <label for="paypal" class="ml-2 text-gray-500">
+                                <span class="flex items-center">PayPal <span class="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Coming Soon</span></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center opacity-50">
+                            <input id="bank_transfer" type="radio" name="payment_method" value="bank_transfer" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" disabled>
+                            <label for="bank_transfer" class="ml-2 text-gray-500">
+                                <span class="flex items-center">Bank Transfer <span class="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Coming Soon</span></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-gray-500 text-sm mb-8">
+                        <p>This is a simulated payment for demonstration purposes. No actual payment will be processed.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md sticky top-20">
+                <h2 class="text-xl font-bold mb-6 text-gray-800 border-b pb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd" />
+                    </svg>
+                    Order Summary
+                </h2>
+                
+                <!-- Items summary -->
+                <div class="space-y-4 mb-6">
+                    {% for item in order.items.all %}
+                    <div class="flex justify-between items-center pb-2 {% if not forloop.last %}border-b border-gray-100{% endif %}">
+                        <div class="flex items-center">
+                            <span class="text-gray-800 font-medium">{{ item.product.name }}</span>
+                            <span class="text-gray-500 text-sm ml-1">× {{ item.quantity }}</span>
+                        </div>
+                        <span class="font-medium text-gray-800">${{ item.subtotal }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Subtotal:</span>
+                        <span class="font-medium text-gray-800">${{ order.subtotal }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Shipping:</span>
+                        <span class="font-medium text-gray-800">${{ order.shipping_total }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Tax:</span>
+                        <span class="font-medium text-gray-800">${{ order.tax }}</span>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <p class="text-lg font-bold text-gray-800">Total:</p>
+                        <p class="text-lg font-bold text-green-600">${{ order.total_price }}</p>
+                    </div>
+                </div>
+                
+                <button type="submit" form="payment-form" class="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                    </svg>
+                    Complete Payment
+                </button>
+                
+                <div class="mt-6 text-center">
+                    <a href="{% url 'marketplace:checkout' %}" class="text-sm text-green-600 hover:text-green-700 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Return to Checkout
+                    </a>
+                </div>
+                
+                <!-- Security badges -->
+                <div class="mt-8 border-t border-gray-200 pt-6">
+                    <div class="flex justify-center space-x-4 mb-4">
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-center text-gray-500">Your payment information is processed securely. We do not store credit card details.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple card number formatting
+    document.addEventListener('DOMContentLoaded', function() {
+        const cardNumber = document.getElementById('card_number');
+        const expiryDate = document.getElementById('expiry_date');
+        const cvc = document.getElementById('cvc');
+        
+        // Format card number with spaces every 4 digits
+        cardNumber.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = value.substring(0, 19); // 16 digits + 3 spaces
+        });
+        
+        // Format expiry date as MM / YY
+        expiryDate.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 2) {
+                value = value.substring(0, 2) + ' / ' + value.substring(2, 4);
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Limit CVC to 3-4 digits
+        cvc.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+        });
+    });
+</script>
+{% endblock %}

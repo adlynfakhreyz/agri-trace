@@ -1,0 +1,94 @@
+{% extends "main_base.html" %}
+
+{% block title %}Edit Profile - AgriTrace{% endblock %}
+
+{% block page_title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="border-b border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-800">Edit Your Profile</h2>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="p-6">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Profile Picture</h3>
+                <div class="flex items-center">
+                    {% if merchant.profile_image %}
+                    <img src="{{ merchant.profile_image.url }}" alt="{{ user.username }}" class="w-24 h-24 rounded-full mr-6 object-cover border-2 border-green-600">
+                    {% else %}
+                    <div class="w-24 h-24 rounded-full mr-6 bg-green-700 flex items-center justify-center text-3xl text-white font-bold">
+                        {{ user.username|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload new picture</label>
+                        {{ merchant_form.profile_image }}
+                        {% if merchant_form.profile_image.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ merchant_form.profile_image.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Personal Information</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <input type="text" value="{{ user.username }}" class="form-input w-full" disabled>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" value="{{ user.email }}" class="form-input w-full" disabled>
+                        </div>
+                        
+                        <div>
+                            <label for="{{ buyer_form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            {{ buyer_form.phone_number }}
+                            {% if buyer_form.phone_number.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ buyer_form.phone_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Address Information</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="{{ buyer_form.location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                            {{ buyer_form.location }}
+                            {% if buyer_form.location.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ buyer_form.location.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ buyer_form.default_shipping_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Default Shipping Address</label>
+                            {{ buyer_form.default_shipping_address }}
+                            {% if buyer_form.default_shipping_address.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ buyer_form.default_shipping_address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <a href="{% url 'marketplace:profile' %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-md transition-colors">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

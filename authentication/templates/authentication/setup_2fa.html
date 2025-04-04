@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="flex justify-center">
+            <img src="/static/images/agri-trace-logo.svg" alt="AgriTrace Logo" class="h-16">
+        </div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Set Up Two-Factor Authentication
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Scan the QR code below with your authenticator app
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+            <div class="text-center">
+                <!-- QR Code PNG -->
+                <div class="flex justify-center mb-6">
+                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                        <img src="data:image/png;base64,{{ qr_code_b64 }}" 
+                             alt="QR Code for 2FA Setup" 
+                             class="w-48 h-48 mx-auto">
+                    </div>
+                </div>
+                
+                <div class="mb-6 p-4 bg-gray-50 rounded-md">
+                    <p class="text-sm text-gray-600 mb-2">Can't scan the QR code?</p>
+                    <p class="text-sm font-medium text-gray-900 break-all">
+                        {{ otp_secret }}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">Enter this code manually in your authenticator app</p>
+                </div>
+            </div>
+
+            <form class="space-y-6" method="POST">
+                {% csrf_token %}
+                <div>
+                    <label for="verification_code" class="block text-sm font-medium text-gray-700">
+                        Verification Code
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="verification_code"
+                            name="verification_code"
+                            type="text"
+                            required
+                            class="py-3 px-4 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#3E8061] focus:border-[#3E8061] sm:text-sm"
+                            placeholder="Enter 6-digit code from app"
+                            autocomplete="off"
+                            autofocus
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full py-3 px-4 bg-green-600 text-white">
+                        Verify and Enable
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
