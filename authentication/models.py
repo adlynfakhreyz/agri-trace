@@ -16,6 +16,10 @@ class User(AbstractUser):
     phone_no = models.CharField(max_length=15, blank=True, null=True)
     otp_secret = models.CharField(max_length=32, blank=True, null=True)
     is_2fa_enabled = models.BooleanField(default=False)
+    # Add field for AgriPay API token
+    agripay_token = models.CharField(max_length=100, blank=True, null=True)
+    # Add field to store if user has a wallet
+    has_agripay_wallet = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
@@ -71,6 +75,7 @@ class Seller(models.Model):
     shop_banner = models.ImageField(upload_to='shop_banners/', null=True, blank=True)
     verified = models.BooleanField(default=False)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"Seller: {self.shop_name}"
@@ -83,3 +88,12 @@ class Seller(models.Model):
             key = str(review.rating)
             counts[key] += 1
         return counts
+    
+    @property
+    def get_order_count(self):
+        """Get the count of completed orders for this seller"""
+        from marketplace.models import OrderItem  # Import here to avoid circular imports
+        return OrderItem.objects.filter(
+            seller=self,
+            order__status__in=['paid', 'shipped', 'delivered']
+        ).count()

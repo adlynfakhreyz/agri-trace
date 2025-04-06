@@ -42,4 +42,11 @@ urlpatterns = [
     path('seller/<int:seller_id>/review/add/', views.add_seller_review, name='add_seller_review'),
     path('reviews/product/edit/<int:review_id>/', views.edit_product_review, name='edit_product_review'),
     path('reviews/seller/edit/<int:review_id>/', views.edit_seller_review, name='edit_seller_review'),
+
+    # AgriPay related URLs
+    path('wallet/link/', views.link_agripay, name='link_agripay'),
+    path('wallet/topup/', views.wallet_topup, name='wallet_topup'),
+    path('wallet/balance/', views.wallet_balance, name='wallet_balance'),
+    path('wallet/transaction/<str:transaction_id>/', views.transaction_detail, name='transaction_detail'),
+
 ]
