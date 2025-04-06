@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,6 +12,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from django.db import models
+import requests
 
 from .models import (
     Product, ProductImage, Cart, CartItem, ProductReview, Seller, Buyer, 
@@ -696,6 +698,102 @@ def checkout(request):
     
     return render(request, 'marketplace/checkout.html', context)
 
+from .forms import AgriPayLinkForm, AgriPayPaymentForm
+from .agripay import AgriPayClient
+
+@login_required
+def link_agripay(request):
+    """View to link AgriPay account with AgriTrace"""
+    user = request.user
+    
+    # If user already has AgriPay wallet
+    if user.has_agripay_wallet:
+        messages.info(request, "You already have an AgriPay wallet linked to your account.")
+        return redirect('marketplace:wallet_balance')
+        
+    if request.method == 'POST':
+        # Pre-populate the form with the username to ensure it's always present
+        post_data = request.POST.copy()
+        if 'username' not in post_data or not post_data['username']:
+            post_data['username'] = user.username
+            
+        form = AgriPayLinkForm(post_data)
+        
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            initial_balance = form.cleaned_data.get('initial_balance', 0)
+            
+            # Base URL for AgriPay API
+            base_url = settings.AGRIPAY_API_URL
+            
+            try:
+                # Check if account exists in AgriPay, if not create it
+                try:
+                    # First try to authenticate with existing credentials
+                    auth_response = requests.post(
+                        f"{base_url}/{settings.AGRIPAY_AUTH_ENDPOINT}",
+                        data={"username": username, "password": password}
+                    )
+                    
+                    if auth_response.status_code == 200:
+                        # User exists in AgriPay, save the token
+                        token_data = auth_response.json()
+                        user.agripay_token = token_data.get('token')
+                        user.has_agripay_wallet = True
+                        user.save()
+                        messages.success(request, "AgriPay wallet linked successfully!")
+                        return redirect('marketplace:wallet_balance')
+                    else:
+                        # User doesn't exist or wrong password, create new account
+                        
+                        # Call the AgriPay signup endpoint
+                        signup_response = requests.post(
+                            f"{base_url}/auth/signup/",
+                            json={
+                                "username": username,
+                                "password": password,
+                                "email": user.email,
+                                "initial_balance": str(initial_balance) if initial_balance else "0.00"
+                            }
+                        )
+                        
+                        if signup_response.status_code == 201:
+                            # Account created, now get the token
+                            auth_response = requests.post(
+                                f"{base_url}/{settings.AGRIPAY_AUTH_ENDPOINT}",
+                                data={"username": username, "password": password}
+                            )
+                            
+                            if auth_response.status_code == 200:
+                                token_data = auth_response.json()
+                                user.agripay_token = token_data.get('token')
+                                user.has_agripay_wallet = True
+                                user.save()
+                                messages.success(request, "AgriPay account created and linked successfully!")
+                                return redirect('marketplace:wallet_balance')
+                            else:
+                                messages.error(request, "Account created but couldn't authenticate. Please try logging in later.")
+                        else:
+                            error_data = signup_response.json()
+                            messages.error(request, f"Failed to create AgriPay account: {error_data.get('error', 'Unknown error')}")
+                except Exception as e:
+                    messages.error(request, f"Error during authentication: {str(e)}")
+                    
+            except requests.exceptions.RequestException as e:
+                messages.error(request, f"Failed to connect to AgriPay service: {str(e)}")
+        else:
+            # Form validation errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        # Pre-populate the username field with the current user's username
+        form = AgriPayLinkForm(initial={'username': user.username})
+    
+    return render(request, 'marketplace/link_agripay.html', {'form': form, 'user': user})
+
+
 
 @login_required
 def payment(request, order_id):
@@ -705,14 +803,63 @@ def payment(request, order_id):
         messages.error(request, 'This order has already been processed.')
         return redirect('marketplace:order_detail', order_id=order.order_id)
     
+    # Create AgriPay payment form
+    agripay_form = None
+    wallet_balance = None
+    has_sufficient_funds = False
+    
+    # Check if user has linked AgriPay wallet
+    if request.user.has_agripay_wallet:
+        agripay_form = AgriPayPaymentForm()
+        
+        # Get wallet balance
+        agripay_client = AgriPayClient(user=request.user)
+        try:
+            balance_data = agripay_client.get_balance()
+            if 'balance' in balance_data:
+                wallet_balance = balance_data['balance']
+                has_sufficient_funds = float(wallet_balance) >= float(order.total_price)
+        except Exception as e:
+            messages.warning(request, f"Could not retrieve AgriPay wallet balance: {str(e)}")
+    
     # Process payment
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
         
-        if payment_method == 'credit_card':
-            # In a real app, integrate with a payment gateway
-            # This is just a placeholder for demonstration
+        if payment_method == 'agripay' and request.user.has_agripay_wallet:
+            # Process payment with AgriPay
+            agripay_form = AgriPayPaymentForm(request.POST)
             
+            if agripay_form.is_valid():
+                password = agripay_form.cleaned_data['password']
+                
+                # Process payment through AgriPay API
+                agripay_client = AgriPayClient(user=request.user)
+                payment_result = agripay_client.process_payment(order.total_price, password)
+                
+                if payment_result.get('status') == 'failed':
+                    messages.error(request, f"Payment failed: {payment_result.get('error', 'Unknown error')}")
+                else:
+                    # Payment successful, update order status
+                    order.status = 'paid'
+                    order.payment_id = f'AGRIPAY-{payment_result.get("transaction_id", timezone.now().timestamp())}'
+                    order.save()
+                    
+                    # Update merchant balances for each seller
+                    for item in order.items.all():
+                        seller_merchant = item.seller.merchant
+                        # Calculate the seller's revenue (excluding shipping)
+                        item_total = item.price * item.quantity
+                        
+                        # Update seller balance
+                        seller_merchant.balance += item_total
+                        seller_merchant.save()
+                    
+                    messages.success(request, 'Payment successful! Your order has been placed.')
+                    return redirect('marketplace:order_confirmation', order_id=order.order_id)
+                    
+        elif payment_method == 'credit_card':
+            # Existing credit card payment logic
             # Update order status
             order.status = 'paid'
             order.payment_id = f'SIMULATED-{timezone.now().timestamp()}'
@@ -736,10 +883,202 @@ def payment(request, order_id):
     context = {
         'order': order,
         'order_items': order.items.all().select_related('product', 'seller', 'shipping_service'),
+        'agripay_form': agripay_form,
+        'wallet_balance': wallet_balance,
+        'has_sufficient_funds': has_sufficient_funds,
     }
     
     return render(request, 'marketplace/payment.html', context)
 
+
+@login_required
+def wallet_topup(request):
+    """View to top up AgriPay wallet"""
+    if not request.user.has_agripay_wallet:
+        messages.error(request, "You need to link your AgriPay wallet first.")
+        return redirect('marketplace:link_agripay')
+    
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                raise ValueError("Amount must be greater than zero.")
+                
+            # Process top-up through AgriPay API
+            agripay_client = AgriPayClient(user=request.user)
+            result = agripay_client.topup_wallet(amount)
+            
+            if 'error' in result:
+                messages.error(request, f"Top-up failed: {result['error']}")
+            else:
+                messages.success(request, f"Successfully topped up {amount} to your AgriPay wallet!")
+                return redirect('marketplace:wallet_balance')
+                
+        except ValueError as e:
+            messages.error(request, str(e))
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+    
+    # Get current wallet balance
+    wallet_balance = None
+    agripay_client = AgriPayClient(user=request.user)
+    
+    try:
+        balance_data = agripay_client.get_balance()
+        if 'balance' in balance_data:
+            wallet_balance = balance_data['balance']
+    except Exception as e:
+        messages.warning(request, f"Could not retrieve wallet balance: {str(e)}")
+    
+    return render(request, 'marketplace/wallet_topup.html', {'wallet_balance': wallet_balance})
+
+@login_required
+def wallet_balance(request):
+    """View to display wallet balance and transaction history"""
+    from datetime import datetime  # Add this import
+    import pytz  # Add this import for timezone handling
+    
+    if not request.user.has_agripay_wallet:
+        messages.error(request, "You need to link your AgriPay wallet first.")
+        return redirect('marketplace:link_agripay')
+    
+    # Get wallet balance and transaction history
+    agripay_client = AgriPayClient(user=request.user)
+    wallet_balance = None
+    transaction_history = []
+    monthly_spending = "0.00"
+    total_topups = "0.00"
+    
+    # Get transaction filter parameters from query string
+    transaction_type = request.GET.get('type')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    try:
+        # Get balance
+        balance_data = agripay_client.get_balance()
+        if 'balance' in balance_data:
+            wallet_balance = balance_data['balance']
+        
+        # Get transaction history with optional filters
+        history_data = agripay_client.get_transactions(
+            transaction_type=transaction_type,
+            start_date=start_date,
+            end_date=end_date,
+            limit=25  # Show last 25 transactions
+        )
+        
+        if 'transactions' in history_data:
+            transaction_history = history_data['transactions']
+            
+            # Convert string timestamps to datetime objects
+            for transaction in transaction_history:
+                if 'timestamp' in transaction and transaction['timestamp']:
+                    try:
+                        # Parse the timestamp string into a datetime object
+                        # Try with microsecond format first
+                        transaction['timestamp'] = datetime.strptime(
+                            transaction['timestamp'], 
+                            "%Y-%m-%d %H:%M:%S.%f"
+                        )
+                    except ValueError:
+                        try:
+                            # Try without microsecond format 
+                            transaction['timestamp'] = datetime.strptime(
+                                transaction['timestamp'], 
+                                "%Y-%m-%d %H:%M:%S"
+                            )
+                        except ValueError:
+                            try:
+                                # Try ISO format
+                                transaction['timestamp'] = datetime.fromisoformat(
+                                    transaction['timestamp'].replace('Z', '+00:00')
+                                )
+                            except (ValueError, AttributeError):
+                                # Keep as string if parsing fails
+                                pass
+            
+        # Get statistics
+        if 'stats' in history_data:
+            stats = history_data['stats']
+            monthly_spending = stats.get('monthly_spending', "0.00")
+            total_topups = stats.get('total_topups', "0.00")
+            
+            # Calculate percentage of monthly spending relative to balance
+            # This is for the progress bar visualization
+            if wallet_balance and float(wallet_balance) > 0 and float(monthly_spending) > 0:
+                monthly_percentage = min(100, (float(monthly_spending) / float(wallet_balance)) * 100)
+            else:
+                monthly_percentage = 0
+        else:
+            monthly_percentage = 0
+        
+    except Exception as e:
+        messages.warning(request, f"Could not retrieve wallet information: {str(e)}")
+        monthly_percentage = 0
+    
+    context = {
+        'wallet_balance': wallet_balance,
+        'transaction_history': transaction_history,
+        'monthly_spending': monthly_spending,
+        'total_topups': total_topups,
+        'monthly_percentage': monthly_percentage,
+    }
+    
+    return render(request, 'marketplace/wallet_balance.html', context)
+
+@login_required
+def transaction_detail(request, transaction_id):
+    """View to display details of a specific transaction"""
+    if not request.user.has_agripay_wallet:
+        messages.error(request, "You need to link your AgriPay wallet first.")
+        return redirect('marketplace:link_agripay')
+    
+    # Get transaction details from AgriPay API
+    agripay_client = AgriPayClient(user=request.user)
+    
+    try:
+        # For the transaction detail endpoint, you would need to add this to the AgriPay API
+        # Here's how you would call it:
+        response = requests.get(
+            f"{settings.AGRIPAY_API_URL}/wallet/transactions/{transaction_id}/",
+            headers=agripay_client._get_headers()
+        )
+        
+        if response.status_code == 404:
+            messages.error(request, "Transaction not found.")
+            return redirect('marketplace:wallet_balance')
+            
+        transaction_data = response.json()
+        
+        # Get related data based on transaction type
+        related_data = None
+        
+        if transaction_data['transaction_type'] == 'purchase':
+            # If it's a purchase, try to get the order details if available
+            order_id = transaction_data.get('reference', '').replace('PURCHASE-', '')
+            try:
+                # This assumes the reference follows a pattern that includes the order ID
+                # You would need to adapt this to your actual reference format
+                related_data = Order.objects.filter(
+                    order_id=order_id,
+                    buyer=request.user.merchant.buyer
+                ).first()
+            except:
+                pass
+        
+    except Exception as e:
+        messages.error(request, f"Could not retrieve transaction details: {str(e)}")
+        return redirect('marketplace:wallet_balance')
+    
+    context = {
+        'transaction': transaction_data,
+        'related_data': related_data
+    }
+    
+    return render(request, 'marketplace/transaction_detail.html', context)
 
 @login_required
 def order_confirmation(request, order_id):

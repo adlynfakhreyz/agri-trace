@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'main',
     'marketplace',
      'authentication',
+     'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -148,4 +149,9 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # Media files configuration
 MEDIA_URL = '/media/'  # URL prefix for media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Absolute filesystem path to the directory for user-uploaded media
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Absolute filesystem path to the directory for user-uploaded 
+
+# AgriPay Integration Settings
+AGRIPAY_API_URL = 'http://localhost:8001/api'  # Change this to the actual API URL
+AGRIPAY_ENABLED = True
+AGRIPAY_AUTH_ENDPOINT = 'token/'

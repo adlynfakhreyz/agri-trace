@@ -1,0 +1,221 @@
+{% extends 'main_base.html' %}
+{% load static %}
+
+{% block title %}Top-up AgriPay Wallet | AgriTrace{% endblock %}
+
+{% block page_title %}Top-up Your Wallet{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Back Link -->
+    <div class="mb-6">
+        <a href="{% url 'marketplace:wallet_balance' %}" class="inline-flex items-center text-[#3D8361] hover:text-[#2c6549] transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Wallet
+        </a>
+    </div>
+
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Header -->
+            <div class="bg-[#3D8361] px-6 py-4">
+                <h1 class="text-xl font-semibold text-[#EAD7A7]">Top-up Your AgriPay Wallet</h1>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6">
+                <!-- Wallet Info -->
+                <div class="flex flex-col md:flex-row items-center mb-8 gap-4">
+                    <div class="md:w-1/3 flex justify-center">
+                        <img src="{% static 'images/agri-trace-logo.svg' %}" alt="AgriPay Logo" class="h-16">
+                    </div>
+                    <div class="md:w-2/3 bg-gray-50 rounded-lg p-4 flex-1">
+                        <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">Current Balance</h2>
+                        <div class="text-3xl font-bold text-[#3D8361]">${{ wallet_balance|floatformat:2 }}</div>
+                    </div>
+                </div>
+                
+                <!-- Top-up Form -->
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Amount Input -->
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount to Top-up</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" name="amount" id="amount" class="focus:ring-[#3D8361] focus:border-[#3D8361] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md" placeholder="0.00" step="0.01" min="5" required>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Minimum amount: $5.00</p>
+                    </div>
+                    
+                    <!-- Payment Method Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                        <div class="mt-4 space-y-4">
+                            <div class="flex items-center">
+                                <input id="credit_card" name="payment_method" type="radio" checked class="focus:ring-[#3D8361] h-4 w-4 text-[#3D8361] border-gray-300" value="credit_card">
+                                <label for="credit_card" class="ml-3 block text-sm font-medium text-gray-700">
+                                    Credit Card
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="bank_transfer" name="payment_method" type="radio" class="focus:ring-[#3D8361] h-4 w-4 text-[#3D8361] border-gray-300" value="bank_transfer">
+                                <label for="bank_transfer" class="ml-3 block text-sm font-medium text-gray-700">
+                                    Bank Transfer
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Credit Card Form Section -->
+                    <div id="creditCardForm" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Details</h3>
+                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2">
+                                <label for="card_number" class="block text-sm font-medium text-gray-700">Card Number</label>
+                                <div class="mt-1">
+                                    <input type="text" id="card_number" class="shadow-sm focus:ring-[#3D8361] focus:border-[#3D8361] block w-full sm:text-sm border-gray-300 rounded-md" placeholder="1234 5678 9012 3456">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="expiry" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                                <div class="mt-1">
+                                    <input type="text" id="expiry" class="shadow-sm focus:ring-[#3D8361] focus:border-[#3D8361] block w-full sm:text-sm border-gray-300 rounded-md" placeholder="MM / YY">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="cvv" class="block text-sm font-medium text-gray-700">CVV</label>
+                                <div class="mt-1">
+                                    <input type="text" id="cvv" class="shadow-sm focus:ring-[#3D8361] focus:border-[#3D8361] block w-full sm:text-sm border-gray-300 rounded-md" placeholder="123">
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-2">
+                                <label for="card_name" class="block text-sm font-medium text-gray-700">Name on Card</label>
+                                <div class="mt-1">
+                                    <input type="text" id="card_name" class="shadow-sm focus:ring-[#3D8361] focus:border-[#3D8361] block w-full sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bank Transfer Form (hidden by default) -->
+                    <div id="bankTransferForm" class="hidden p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Bank Transfer Information</h3>
+                        <div class="rounded-md bg-blue-50 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1 md:flex md:justify-between">
+                                    <p class="text-sm text-blue-700">
+                                        Please use the following details to make a bank transfer. Your wallet will be updated once the transfer is confirmed (1-2 business days).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <dl class="mt-4 space-y-3">
+                            <div class="grid grid-cols-2 gap-4">
+                                <dt class="text-sm font-medium text-gray-500">Bank Name:</dt>
+                                <dd class="text-sm text-gray-900">AgriBank National</dd>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <dt class="text-sm font-medium text-gray-500">Account Name:</dt>
+                                <dd class="text-sm text-gray-900">AgriTrace Payments</dd>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <dt class="text-sm font-medium text-gray-500">Account Number:</dt>
+                                <dd class="text-sm font-mono text-gray-900">1234567890</dd>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <dt class="text-sm font-medium text-gray-500">Reference:</dt>
+                                <dd class="text-sm font-mono text-gray-900">AP-{{ user.username }}</dd>
+                            </div>
+                        </dl>
+                        
+                        <div class="mt-4">
+                            <label for="reference_number" class="block text-sm font-medium text-gray-700">Your Transfer Reference Number</label>
+                            <div class="mt-1">
+                                <input type="text" id="reference_number" name="reference_number" class="shadow-sm focus:ring-[#3D8361] focus:border-[#3D8361] block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter the reference number from your bank">
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">This helps us track your payment faster</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3">
+                        <a href="{% url 'marketplace:wallet_balance' %}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D8361]">
+                            Cancel
+                        </a>
+                        <button type="submit" id="submitButton" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-[#3D8361] hover:bg-[#2c6549] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D8361]">
+                            Process Top-up
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Transaction History Link -->
+                <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                    <a href="{% url 'marketplace:wallet_balance' %}" class="text-sm font-medium text-[#3D8361] hover:text-[#2c6549]">
+                        View your transaction history
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Notice -->
+        <div class="mt-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-gray-800">Secure Payments</h3>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <p>Your payment information is encrypted and secure. We use industry-standard security measures to protect your data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const creditCardRadio = document.getElementById('credit_card');
+        const bankTransferRadio = document.getElementById('bank_transfer');
+        const creditCardForm = document.getElementById('creditCardForm');
+        const bankTransferForm = document.getElementById('bankTransferForm');
+        const submitButton = document.getElementById('submitButton');
+        
+        function togglePaymentForm() {
+            if (creditCardRadio.checked) {
+                creditCardForm.classList.remove('hidden');
+                bankTransferForm.classList.add('hidden');
+                submitButton.textContent = 'Process Top-up';
+            } else {
+                creditCardForm.classList.add('hidden');
+                bankTransferForm.classList.remove('hidden');
+                submitButton.textContent = 'Confirm Bank Transfer';
+            }
+        }
+        
+        creditCardRadio.addEventListener('change', togglePaymentForm);
+        bankTransferRadio.addEventListener('change', togglePaymentForm);
+        
+        // Initial toggle
+        togglePaymentForm();
+    });
+</script>
+{% endblock %}

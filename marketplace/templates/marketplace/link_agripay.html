@@ -1,0 +1,176 @@
+{% extends "main_base.html" %}
+
+{% block title %}Link AgriPay Wallet - AgriTrace{% endblock %}
+
+{% block page_title %}Link Your AgriPay Wallet{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div class="border-b border-gray-200">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800">Connect Your AgriPay Wallet</h2>
+                <p class="text-gray-600 mt-2">Link your wallet for seamless payments in the marketplace.</p>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- AgriPay Info Section -->
+            <div class="flex flex-col md:flex-row gap-6 mb-8">
+                <div class="md:w-1/3 flex justify-center items-start">
+                    <!-- Placeholder for AgriPay logo -->
+                    <div class="w-32 h-32 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="md:w-2/3">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Why Link Your AgriPay Wallet?</h3>
+                    <div class="space-y-3 text-gray-600">
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
+                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            <p>Fast and secure checkout experience</p>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
+                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            <p>Manage all your AgriTrace transactions in one place</p>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
+                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            <p>Easy top-up and balance management</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}bg-red-50 border-l-4 border-red-500 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-l-4 border-green-500 text-green-800{% else %}bg-blue-50 border-l-4 border-blue-500 text-blue-800{% endif %} p-4 mb-3 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            {% if message.tags == 'error' %}
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm1-5a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zm4-3a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                            </svg>
+                            {% elif message.tags == 'success' %}
+                            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm1-5a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {% else %}
+                            <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">{{ message }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Simplified Registration Form -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Link Your AgriPay Account</h3>
+                
+                <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md">
+                    <p>We'll use your AgriTrace username ({{ user.username }}) to create or link your AgriPay wallet. Just confirm your password to continue.</p>
+                </div>
+                
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden username field -->
+                    {{ form.username }}
+                    
+                    <div class="form-group">
+                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">Your Password</label>
+                        {{ form.password }}
+                        <p class="mt-1 text-xs text-gray-500">We need this to verify your identity and create your AgriPay account securely.</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_initial_balance" class="block text-sm font-medium text-gray-700 mb-1">Initial Deposit (Optional)</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            {{ form.initial_balance }}
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Link My AgriPay Wallet
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- FAQ Link -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Have questions about AgriPay? View our 
+                    <a href="#" class="text-green-600 hover:text-green-800 font-medium">Frequently Asked Questions</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="border-b border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-800">Frequently Asked Questions</h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">What is AgriPay?</h3>
+                    <div class="mt-2 text-gray-600">
+                        <p>AgriPay is our secure digital wallet service designed specifically for agricultural transactions. It allows farmers, buyers, and sellers to manage funds and make payments within the AgriTrace ecosystem.</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">How do I create an AgriPay account?</h3>
+                    <div class="mt-2 text-gray-600">
+                        <p>It's easy! Just click the "Link My AgriPay Wallet" button above. We'll automatically use your AgriTrace username to create your AgriPay account.</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Is AgriPay secure?</h3>
+                    <div class="mt-2 text-gray-600">
+                        <p>Yes! AgriPay employs bank-level security protocols, two-factor authentication, and encrypted transactions to ensure your funds are always protected.</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Will there be transaction fees?</h3>
+                    <div class="mt-2 text-gray-600">
+                        <p>AgriPay transactions within the AgriTrace platform are fee-free. Only external withdrawals to bank accounts incur standard processing fees.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

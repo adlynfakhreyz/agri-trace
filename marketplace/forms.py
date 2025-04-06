@@ -4,6 +4,9 @@ from authentication.models import Buyer, Merchant, Seller
 from marketplace.models import Product, ProductImage
 from django.utils.text import slugify
 
+from django import forms
+from django.utils.translation import gettext_lazy as _
+
 class MerchantForm(forms.ModelForm):
     class Meta:
         model = Merchant
@@ -24,7 +27,7 @@ class SellerRegistrationForm(forms.ModelForm):
 
 from django import forms
 from .models import Category, Product, ProductImage
-from django.forms import inlineformset_factory
+from django.forms import ValidationError, inlineformset_factory
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -169,3 +172,27 @@ class ProductSearchForm(forms.Form):
             ('rating', 'Best Rating'),
         )
     )
+
+class AgriPayLinkForm(forms.Form):
+    username = forms.CharField(
+        label=_("AgriPay Username"), 
+        max_length=150,
+        required=True,
+        widget=forms.HiddenInput()  # Make it hidden so users don't see/edit it
+    )
+    password = forms.CharField(
+        label=_("Your Password"), 
+        widget=forms.PasswordInput,
+        help_text=_("Provide your password to create or link your AgriPay account")
+    )
+    initial_balance = forms.DecimalField(
+        label=_("Initial Deposit (Optional)"),
+        required=False,
+        min_value=0,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'placeholder': '0.00', 'step': '0.01'})
+    )
+    
+class AgriPayPaymentForm(forms.Form):
+    password = forms.CharField(label=_("AgriPay Password"), widget=forms.PasswordInput)
+    use_agripay = forms.BooleanField(label=_("Pay with AgriPay wallet"), required=False, initial=True)

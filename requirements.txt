@@ -8,3 +8,5 @@ python-decouple
 pyotp
 qrcode
 qrcode[pil]
+django-widget-tweaks
+pytz
