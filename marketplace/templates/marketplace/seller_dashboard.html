@@ -1,0 +1,244 @@
+{% extends 'main_base.html' %}
+{% load static %}
+
+{% block title %}Seller Dashboard - AgriTrace{% endblock %}
+{% block page_title %}Seller Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Welcome back, {{ request.user.username }}</h2>
+            <p class="text-gray-600">Here's what's happening with your store today</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
+            <a href="{% url 'marketplace:seller_orders' %}" class="bg-white border border-[#3D8361] text-[#3D8361] hover:bg-gray-50 px-6 py-2 rounded-lg flex items-center transition duration-300">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Manage Orders
+            </a>
+            <a href="{% url 'marketplace:add_product' %}" class="bg-[#3D8361] hover:bg-[#2D6348] text-[#EAD7A7] px-6 py-2 rounded-lg flex items-center transition duration-300">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add New Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Total Sales -->
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-[#3D8361]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500">Total Sales</p>
+                    <h3 class="text-3xl font-bold text-gray-800">{{ total_sales }}</h3>
+                </div>
+                <div class="bg-[#EAD7A7] bg-opacity-30 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-[#3D8361]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">All time sales</p>
+        </div>
+
+        <!-- Monthly Sales -->
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-[#3D8361]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500">Monthly Sales</p>
+                    <h3 class="text-3xl font-bold text-gray-800">{{ monthly_sales }}</h3>
+                </div>
+                <div class="bg-[#EAD7A7] bg-opacity-30 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-[#3D8361]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Last 30 days</p>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-[#3D8361]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500">Total Revenue</p>
+                    <h3 class="text-3xl font-bold text-gray-800">$ {{ total_revenue|floatformat:"2g" }}</h3>
+                </div>
+                <div class="bg-[#EAD7A7] bg-opacity-30 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-[#3D8361]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">All time earnings</p>
+        </div>
+    </div>
+
+    <!-- Recent Orders & Products Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">Recent Orders</h3>
+                <a href="{% url 'marketplace:seller_orders' %}" class="text-sm font-medium text-[#3D8361] hover:text-[#2D6348]">
+                    View all orders →
+                </a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% if recent_orders %}
+                    {% for order_item in recent_orders %}
+                    <div class="p-4 hover:bg-gray-50 transition duration-150">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-medium text-gray-800">Order #{{ order_item.order.order_id|truncatechars:8 }}</p>
+                                <p class="text-sm text-gray-500">{{ order_item.product.name }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-gray-800">$ {{ order_item.price }}</p>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if order_item.order.status == 'paid' %}bg-green-100 text-green-800
+                                    {% elif order_item.order.status == 'shipped' %}bg-blue-100 text-blue-800
+                                    {% elif order_item.order.status == 'delivered' %}bg-purple-100 text-purple-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ order_item.order.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex justify-between text-sm text-gray-500">
+                            <span>Qty: {{ order_item.quantity }}</span>
+                            <span>{{ order_item.order.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{% url 'marketplace:seller_order_detail' order_item.order_item_id %}" class="text-xs font-medium text-[#3D8361] hover:text-[#2D6348]">
+                                View details
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-6 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No recent orders</h3>
+                        <p class="mt-1 text-sm text-gray-500">Your recent orders will appear here</p>
+                    </div>
+                {% endif %}
+            </div>
+            {% if recent_orders %}
+            <div class="p-4 bg-gray-50 text-center">
+                <a href="{% url 'marketplace:seller_orders' %}" class="text-sm font-medium text-[#3D8361] hover:text-[#2D6348]">
+                    View all orders →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Your Products -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">Your Products</h3>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#EAD7A7] text-[#3D8361]">
+                    {{ products.count }} items
+                </span>
+            </div>
+            <div class="divide-y divide-gray-200 max-h-[400px] overflow-y-auto">
+                {% if products %}
+                    {% for product in products %}
+                    <div class="p-4 hover:bg-gray-50 transition duration-150">
+                        <div class="flex items-start">
+                            {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="h-16 w-16 rounded-md object-cover">
+                            {% else %}
+                            <div class="h-16 w-16 rounded-md bg-gray-200 flex items-center justify-center">
+                                <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            {% endif %}
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-sm font-medium text-gray-800">{{ product.name }}</h4>
+                                    <p class="text-sm font-medium text-gray-800">$ {{ product.price }}</p>
+                                </div>
+                                <div class="mt-1 flex items-center justify-between">
+                                    <p class="text-xs text-gray-500">Stock: {{ product.stock }}</p>
+                                    <div class="flex items-center">
+                                        <svg class="h-3 w-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                        </svg>
+                                        <span class="ml-1 text-xs text-gray-500">{{ product.average_rating|default:"0.00" }} ({{ product.reviews.count }})</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex space-x-3">
+                                    <a href="{% url 'marketplace:edit_product' product.product_id %}" class="text-xs font-medium text-[#3D8361] hover:text-[#2D6348]">
+                                        Edit
+                                    </a>
+                                    <button onclick="confirmDelete('{{ product.product_id }}', '{{ product.name }}')" class="text-xs font-medium text-red-600 hover:text-red-800">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-6 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No products added</h3>
+                        <p class="mt-1 text-sm text-gray-500">Get started by adding your first product</p>
+                        <div class="mt-6">
+                            <a href="{% url 'marketplace:add_product' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-[#3D8361] hover:bg-[#2D6348] focus:outline-none">
+                                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Product
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            {% if products %}
+            <div class="p-4 bg-gray-50 text-center">
+                <a href="#" class="text-sm font-medium text-[#3D8361] hover:text-[#2D6348]">
+                    View all products →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(productId, productName) {
+        if (confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+            fetch(`/marketplace/seller/products/delete/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error deleting product');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the product');
+            });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,329 @@
+{% extends 'main_base.html' %}
+{% load static %}
+
+{% block title %}Order Details - AgriTrace{% endblock %}
+{% block page_title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Back Navigation -->
+    <div class="mb-8">
+        <a href="{% url 'marketplace:seller_orders' %}" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Orders
+        </a>
+    </div>
+
+    <!-- Order Summary Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Order #{{ order.order_id|truncatechars:8 }}</h2>
+            <p class="text-gray-600">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"H:i" }}</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center space-x-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                {% if order_item.shipping_status == 'processing' %}bg-yellow-100 text-yellow-800
+                {% elif order_item.shipping_status == 'shipped' %}bg-blue-100 text-blue-800
+                {% elif order_item.shipping_status == 'delivered' %}bg-green-100 text-green-800
+                {% elif order_item.shipping_status == 'returned' %}bg-red-100 text-red-800
+                {% endif %}">
+                {{ order_item.shipping_status|title }}
+            </span>
+            <button onclick="updateStatus('{{ order_item.order_item_id }}')" class="bg-[#3D8361] hover:bg-[#2D6348] text-white px-4 py-2 rounded-lg flex items-center transition duration-300">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Update Status
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Order Details -->
+        <div class="lg:col-span-2">
+            <!-- Order Item Card -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">Order Item</h3>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row">
+                        <!-- Product Image -->
+                        <div class="mb-4 md:mb-0 md:mr-6">
+                            {% if order_item.product.images.first %}
+                            <img src="{{ order_item.product.images.first.image.url }}" alt="{{ order_item.product.name }}" class="h-32 w-32 object-cover rounded-md">
+                            {% else %}
+                            <div class="h-32 w-32 bg-gray-200 rounded-md flex items-center justify-center">
+                                <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Product Details -->
+                        <div class="flex-1">
+                            <h4 class="text-lg font-medium text-gray-900">{{ order_item.product.name }}</h4>
+                            <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Product ID</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ order_item.product.product_id }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Quantity</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ order_item.quantity }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Item Price</p>
+                                    <p class="text-sm font-medium text-gray-900">${{ order_item.price|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Shipping</p>
+                                    <p class="text-sm font-medium text-gray-900">${{ order_item.shipping_price|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Shipping Method</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ order_item.shipping_service.name }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Subtotal</p>
+                                    <p class="text-sm font-medium text-gray-900">${{ order_item.subtotal|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Shipping Timeline -->
+                            <div class="mt-6">
+                                <h5 class="text-sm font-semibold text-gray-700 mb-2">Shipping Timeline</h5>
+                                <div class="relative">
+                                    <!-- Timeline Connector -->
+                                    <div class="absolute h-full w-0.5 bg-gray-200 left-2.5 top-0"></div>
+                                    
+                                    <!-- Processing Step -->
+                                    <div class="relative flex items-start mb-4">
+                                        <div class="flex-shrink-0 h-5 w-5 rounded-full {% if order_item.shipping_status != 'processing' %}bg-green-500{% else %}bg-yellow-500{% endif %} flex items-center justify-center z-10"></div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-900">Processing</p>
+                                            <p class="text-xs text-gray-500">Order received and being prepared</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Shipped Step -->
+                                    <div class="relative flex items-start mb-4">
+                                        <div class="flex-shrink-0 h-5 w-5 rounded-full {% if order_item.shipping_status == 'shipped' or order_item.shipping_status == 'delivered' %}bg-green-500{% elif order_item.shipping_status == 'returned' %}bg-red-500{% else %}bg-gray-300{% endif %} flex items-center justify-center z-10"></div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-900">Shipped</p>
+                                            <p class="text-xs text-gray-500">
+                                                {% if order_item.shipping_status == 'shipped' or order_item.shipping_status == 'delivered' %}
+                                                    Package has been shipped
+                                                {% else %}
+                                                    Package will be shipped soon
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Delivered Step -->
+                                    <div class="relative flex items-start">
+                                        <div class="flex-shrink-0 h-5 w-5 rounded-full {% if order_item.shipping_status == 'delivered' %}bg-green-500{% elif order_item.shipping_status == 'returned' %}bg-red-500{% else %}bg-gray-300{% endif %} flex items-center justify-center z-10"></div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-900">Delivered</p>
+                                            <p class="text-xs text-gray-500">
+                                                {% if order_item.shipping_status == 'delivered' %}
+                                                    Package has been delivered
+                                                {% else %}
+                                                    {% if order_item.estimated_delivery %}
+                                                        Estimated delivery: {{ order_item.estimated_delivery|date:"M d, Y" }}
+                                                    {% else %}
+                                                        To be delivered
+                                                    {% endif %}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Information -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">Shipping Information</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Shipping Address</h4>
+                            <p class="text-sm text-gray-700 whitespace-pre-line">{{ order.shipping_address }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Shipping Method</h4>
+                            <p class="text-sm text-gray-700">{{ order_item.shipping_service.name }}</p>
+                            <p class="text-sm text-gray-700">{{ order_item.shipping_service.description }}</p>
+                            <p class="text-xs text-gray-500 mt-1">Estimated delivery time: {{ order_item.shipping_service.estimated_days }} days</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buyer Information -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">Buyer Information</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Customer</h4>
+                            <p class="text-sm text-gray-700">{{ order.buyer.merchant.user.get_full_name|default:order.buyer.merchant.user.username }}</p>
+                            <p class="text-sm text-gray-700">{{ order.buyer.merchant.user.email }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Billing Address</h4>
+                            <p class="text-sm text-gray-700 whitespace-pre-line">{{ order.billing_address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden sticky top-20">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">Order Summary</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <p class="text-sm text-gray-600">Subtotal ({{ order_item.quantity }} item)</p>
+                            <p class="text-sm font-medium text-gray-900">${{ order_item.price|floatformat:2 }}</p>
+                        </div>
+                        <div class="flex justify-between">
+                            <p class="text-sm text-gray-600">Shipping</p>
+                            <p class="text-sm font-medium text-gray-900">${{ order_item.shipping_price|floatformat:2 }}</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-200 flex justify-between">
+                            <p class="text-base font-medium text-gray-900">Total</p>
+                            <p class="text-base font-medium text-gray-900">${{ order_item.subtotal|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-6">
+                    <div class="space-y-2">
+                        <p class="text-xs text-gray-500">Order ID: {{ order_item.order.order_id }}</p>
+                        <p class="text-xs text-gray-500">Order Item ID: {{ order_item.order_item_id }}</p>
+                        <p class="text-xs text-gray-500">Payment ID: {{ order.payment_id|default:"Not available" }}</p>
+                        <p class="text-xs text-gray-500">Order Date: {{ order.created_at|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div id="updateStatusModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#EAD7A7] sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-[#3D8361]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Update Order Status
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                Update the shipping status for this order item. The customer will be notified of any changes.
+                            </p>
+                            <div class="mt-4">
+                                <label for="shippingStatus" class="block text-sm font-medium text-gray-700">
+                                    Shipping Status
+                                </label>
+                                <select id="shippingStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#3D8361] focus:border-[#3D8361] sm:text-sm rounded-md">
+                                    <option value="processing" {% if order_item.shipping_status == 'processing' %}selected{% endif %}>Processing</option>
+                                    <option value="shipped" {% if order_item.shipping_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="delivered" {% if order_item.shipping_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="returned" {% if order_item.shipping_status == 'returned' %}selected{% endif %}>Returned</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmUpdateBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#3D8361] text-base font-medium text-white hover:bg-[#2D6348] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Update Status
+                </button>
+                <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStatus(orderItemId) {
+        document.getElementById('updateStatusModal').classList.remove('hidden');
+    }
+    
+    function closeModal() {
+        document.getElementById('updateStatusModal').classList.add('hidden');
+    }
+    
+    document.getElementById('confirmUpdateBtn').addEventListener('click', function() {
+        const status = document.getElementById('shippingStatus').value;
+        
+        fetch(`/marketplace/seller/orders/update-status/{{ order_item.order_item_id }}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeModal();
+                // Reload the page to show updated status
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error updating status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the status');
+        });
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('updateStatusModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="flex justify-center">
+            <img src="/static/images/agri-trace-logo.svg" alt="AgriTrace Logo" class="h-16">
+        </div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Don't have an account?
+            <a href="{% url 'register' %}" class="font-medium text-[#3E8061] hover:text-[#2d5d47] transition-colors">
+                Register
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+            {% if form.errors %}
+                <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <p>Your username and password didn't match. Please try again.</p>
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">
+                        Username
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username"
+                            required
+                            class="py-3 px-4 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#3E8061] focus:border-[#3E8061] sm:text-sm"
+                            placeholder="Enter your username"
+                            value="{{ form.username.value|default:'' }}"
+                        >
+                    </div>
+                </div>
+                
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="password"
+                            required
+                            class="py-3 px-4 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#3E8061] focus:border-[#3E8061] sm:text-sm"
+                            placeholder="Enter your password"
+                        >
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-[#3E8061] focus:ring-[#3E8061] border-gray-300 rounded">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-[#3E8061] hover:text-[#2d5d47] transition-colors">
+                            Forgot your password?
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="w-full py-3 px-4 bg-green-600 text-white">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

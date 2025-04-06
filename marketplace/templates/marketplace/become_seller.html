@@ -1,0 +1,129 @@
+{% extends "main_base.html" %}
+
+{% block title %}Become a Seller - AgriTrace{% endblock %}
+
+{% block page_title %}Become a Seller{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="border-b border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-800">Register as a Seller</h2>
+            <p class="text-gray-600 mt-2">Fill out the form below to start selling your agricultural products on AgriTrace Marketplace.</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="p-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                {% for error in form.non_field_errors %}
+                <p class="text-red-600">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="space-y-6">
+                <!-- Shop Name Field -->
+                <div>
+                    <label for="{{ form.shop_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Shop Name *</label>
+                    <input type="text" name="{{ form.shop_name.name }}" id="{{ form.shop_name.id_for_label }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500" 
+                           value="{{ form.shop_name.value|default_if_none:'' }}">
+                    {% if form.shop_name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.shop_name.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Choose a unique name for your shop that represents your brand.</p>
+                </div>
+                
+                <!-- Shop Logo Field -->
+                <div>
+                    <label for="{{ form.shop_logo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Shop Logo</label>
+                    <input type="file" name="{{ form.shop_logo.name }}" id="{{ form.shop_logo.id_for_label }}" 
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-md file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-green-50 file:text-green-700
+                                  hover:file:bg-green-100">
+                    {% if form.shop_logo.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.shop_logo.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Upload a logo for your shop (recommended size: 500x500px).</p>
+                </div>
+                
+                <!-- Description Field -->
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Shop Description *</label>
+                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">{{ form.description.value|default_if_none:'' }}</textarea>
+                    {% if form.description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Describe your shop, products, and what makes your offerings unique.</p>
+                </div>
+                
+                <!-- Business Registration Field -->
+                <div>
+                    <label for="{{ form.business_registration.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Business Registration Number</label>
+                    <input type="text" name="{{ form.business_registration.name }}" id="{{ form.business_registration.id_for_label }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500" 
+                           value="{{ form.business_registration.value|default_if_none:'' }}">
+                    {% if form.business_registration.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.business_registration.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Your business registration or tax ID number (if applicable).</p>
+                </div>
+                
+                <!-- Business Address Field -->
+                <div>
+                    <label for="{{ form.business_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Business Address *</label>
+                    <textarea name="{{ form.business_address.name }}" id="{{ form.business_address.id_for_label }}" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">{{ form.business_address.value|default_if_none:'' }}</textarea>
+                    {% if form.business_address.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.business_address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Contact Phone Field -->
+                <div>
+                    <label for="{{ form.contact_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label>
+                    <input type="text" name="{{ form.contact_phone.name }}" id="{{ form.contact_phone.id_for_label }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500" 
+                           value="{{ form.contact_phone.value|default_if_none:'' }}">
+                    {% if form.contact_phone.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.contact_phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Terms Agreement -->
+                <div class="pt-4 border-t border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="checkbox" name="{{ form.terms_agreed.name }}" id="{{ form.terms_agreed.id_for_label }}" 
+                                   class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded" 
+                                   {% if form.terms_agreed.value %}checked{% endif %}>
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.terms_agreed.id_for_label }}" class="font-medium text-gray-700">I agree to the Terms of Service *</label>
+                            <p class="text-gray-500">By checking this box, you agree to our <a href="#" class="text-green-700 hover:text-green-800">Terms of Service</a> and <a href="#" class="text-green-700 hover:text-green-800">Seller Policy</a>.</p>
+                            {% if form.terms_agreed.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.terms_agreed.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-8">
+                <a href="{% url 'marketplace:profile' %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors duration-200">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-md transition-colors duration-200">
+                    Register as Seller
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
