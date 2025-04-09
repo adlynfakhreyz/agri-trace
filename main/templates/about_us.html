@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About Us - AgriTrace{% endblock %}
+
+{% block content %}
+<div class="hero-green min-h-screen px-6 md:px-16 py-16">
+  <div class="container mx-auto space-y-32">
+
+    <!-- About Us -->
+    <div class="flex flex-col md:flex-row items-center gap-12">
+      <div class="w-full md:w-1/2">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6" style="color: #fffd7d;">About Us</h1>
+        <p class="text-lg" style="color: #E2E1A2;">
+          AgriTrace hadir sebagai solusi digital untuk menjawab tantangan petani masa kini. Kami percaya bahwa pertanian yang efisien, berkelanjutan, dan modern dimulai dari data yang tepat dan dukungan teknologi yang relevan. Karena itu, kami merancang AgriTrace bukan hanya sebagai alat, tapi sebagai mitra bertani yang siap tumbuh bersama petani Indonesia.
+        </p>
+      </div>
+      <div class="w-full md:w-1/2">
+        <img src="{% static 'images/about_us.png' %}" alt="Farmers working with AgriTrace" class="w-full max-w-lg mx-auto rounded-xl">
+      </div>
+    </div>
+
+    <!-- Our Mission -->
+    <div class="flex flex-col md:flex-row items-center gap-12 px-6 py-12 rounded-xl" style="background-color: #E2E1A2;">
+      <div class="w-full md:w-1/2">
+        <img src="{% static 'images/our_mission.png' %}" alt="Farmers working with AgriTrace" class="w-full max-w-lg mx-auto rounded-xl">
+      </div>
+      <div class="w-full md:w-1/2">
+        <h1 class="text-3xl md:text-4xl font-bold mb-6" style="color: #3E8061;">Our Mission: Empowering Farmers Through Smart Agriculture</h1>
+        <p class="text-lg" style="color: #322F20;">
+          Kami berkomitmen untuk memberdayakan petani melalui teknologi yang mudah diakses dan bermanfaat nyata. Dengan AgriTrace, kami ingin membantu petani mengambil keputusan yang lebih baik, menghemat waktu, serta meningkatkan produktivitas dan hasil panen mereka. Karena ketika petani tumbuh lebih baik, kita semua ikut tumbuh bersama.
+        </p>
+      </div>
+    </div>
+
+    <!-- Our Story -->
+    <div class="flex flex-col md:flex-row items-center gap-12">
+      <div class="w-full md:w-1/2">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6" style="color: #fffd7d;">Our Story</h1>
+        <p class="text-lg" style="color: #E2E1A2;">
+          AgriTrace lahir sebagai platform yang mengintegrasikan seluruh proses pertanian dalam satu genggaman. Mulai dari pencatatan aktivitas lahan, rekomendasi waktu panen berdasarkan data, hingga belanja perlengkapan pertanian dan peringatan cuaca berbasis lokasi. Kami percaya, petani berhak mendapatkan dukungan teknologi yang bisa diandalkan.
+        </p>
+      </div>
+      <div class="w-full md:w-1/2">
+        <img src="{% static 'images/our_story.png' %}" alt="Farmers working with AgriTrace" class="w-full max-w-lg mx-auto rounded-xl">
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

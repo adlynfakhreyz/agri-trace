@@ -8,6 +8,12 @@ def home_view(request):
 def dashboard_view(request):
     return render(request, 'dashboard.html')
 
+def about_us_view(request):
+    return render(request, 'about_us.html')
+
+def contact_view(request):
+    return render(request, 'contact.html')
+
 from django.http import JsonResponse
 
 @login_required

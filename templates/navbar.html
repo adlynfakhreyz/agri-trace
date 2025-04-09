@@ -4,12 +4,12 @@
     <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <img src="{% static 'images/agri-trace-logo.svg' %}" alt="AgriTrace Logo" class="h-8">
-            <span class="font-bold text-xl text-white">AgriTrace</span>
+            <span class="font-bold text-xl" style="color: #E2E1A2;">AgriTrace</span>
         </div>
         <ul class="flex space-x-8">
             <li><a href="{% url 'home' %}" class="nav-link font-medium">Home</a></li>
-            <li><a href="#" class="nav-link font-medium">About Us</a></li>
-            <li><a href="#" class="nav-link font-medium">Contact</a></li>
+            <li><a href="{% url 'about_us' %}" class="nav-link font-medium">About Us</a></li>
+            <li><a href="{% url 'contact' %}" class="nav-link font-medium">Contact</a></li>
         </ul>
     </div>
 </nav>
