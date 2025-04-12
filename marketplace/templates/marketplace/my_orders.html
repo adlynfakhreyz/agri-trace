@@ -1,0 +1,101 @@
+{% extends 'main_base.html' %}
+
+{% block title %}My Orders | AgriTrace{% endblock %}
+
+{% block page_title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6">My Orders</h2>
+        
+        {% if orders %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase border-b">Order ID</th>
+                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase border-b">Date</th>
+                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase border-b">Total</th>
+                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase border-b">Status</th>
+                            <th class="py-3 px-4 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase border-b">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr class="{% cycle 'bg-gray-50' '' %}">
+                                <td class="py-3 px-4 border-b border-gray-200 text-sm">{{ order.order_id|truncatechars:8 }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200 text-sm">{{ order.created_at|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200 text-sm">${{ order.total_price }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200 text-sm">
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% elif order.status == 'paid' %}bg-blue-100 text-blue-800
+                                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                                        {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                                        {% elif order.status == 'refunded' %}bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 border-b border-gray-200 text-sm text-center">
+                                    <a href="{% url 'marketplace:order_detail' order_id=order.order_id %}" 
+                                       class="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-150">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="flex justify-center mt-6">
+                    <div class="flex space-x-1">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1" class="px-4 py-2 text-sm text-gray-700 bg-gray-200 rounded-l hover:bg-gray-300">&laquo; First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300">Previous</a>
+                        {% else %}
+                            <span class="px-4 py-2 text-sm text-gray-500 bg-gray-100 rounded-l cursor-not-allowed">&laquo; First</span>
+                            <span class="px-4 py-2 text-sm text-gray-500 bg-gray-100 cursor-not-allowed">Previous</span>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="px-4 py-2 text-sm text-white bg-green-600">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?page={{ num }}" class="px-4 py-2 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300">Next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 text-sm text-gray-700 bg-gray-200 rounded-r hover:bg-gray-300">Last &raquo;</a>
+                        {% else %}
+                            <span class="px-4 py-2 text-sm text-gray-500 bg-gray-100 cursor-not-allowed">Next</span>
+                            <span class="px-4 py-2 text-sm text-gray-500 bg-gray-100 rounded-r cursor-not-allowed">Last &raquo;</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12 border border-gray-200 rounded-lg">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Orders Yet</h3>
+                <p class="text-gray-500 mb-6">You haven't placed any orders yet.</p>
+                <a href="{% url 'marketplace:product_list' %}" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Start Shopping
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

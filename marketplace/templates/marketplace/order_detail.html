@@ -1,0 +1,166 @@
+{% extends 'main_base.html' %}
+
+{% block title %}Order #{{ order.order_id|truncatechars:8 }} | AgriTrace{% endblock %}
+
+{% block page_title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Order Header Info -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Order #{{ order.order_id|truncatechars:8 }}</h2>
+                <p class="text-gray-600 mb-2">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"g:i A" }}</p>
+                <div class="mt-3">
+                    <span class="px-3 py-1 rounded-full text-sm font-semibold 
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'paid' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                        {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% elif order.status == 'refunded' %}bg-gray-100 text-gray-800
+                        {% endif %}">
+                        {{ order.status|title }}
+                    </span>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-gray-600 mb-1">Total Amount</p>
+                <p class="text-3xl font-bold text-gray-800">${{ order.total_price }}</p>
+                {% if order.payment_id %}
+                    <p class="text-sm text-gray-500 mt-2">Payment ID: {{ order.payment_id }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Items -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h3 class="text-lg font-semibold text-gray-800">Order Items</h3>
+        </div>
+        
+        {% for seller_item in seller_items %}
+            <div class="border-b border-gray-200 px-6 py-5">
+                <div class="flex items-center mb-4">
+                    <div class="text-lg font-medium text-gray-800">{{ seller_item.seller.shop_name }}</div>
+                    <div class="ml-auto text-sm">
+                        <span class="text-gray-600">Seller ID: </span>
+                        <span class="text-gray-800">{{ seller_item.seller.id }}</span>
+                    </div>
+                </div>
+                
+                {% for item in seller_item.items %}
+                    <div class="flex flex-col md:flex-row items-start md:items-center py-4 border-t border-gray-100 {% if forloop.last %}mb-0{% else %}mb-3{% endif %}">
+                        <div class="w-full md:w-3/5 flex items-center">
+                            {% if item.product.images.exists %}
+                                {% with image=item.product.images.first %}
+                                    <img src="{{ image.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded border">
+                                {% endwith %}
+                            {% else %}
+                                <div class="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            <div class="ml-4">
+                                <h4 class="text-md font-medium text-gray-800">{{ item.product.name }}</h4>
+                                <p class="text-sm text-gray-600">Price: ${{ item.price }} × {{ item.quantity }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="w-full md:w-1/5 my-3 md:my-0">
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-700">Shipping:</span> 
+                                <span>${{ item.shipping_price }}</span>
+                            </div>
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-700">Service:</span> 
+                                <span>{{ item.shipping_service.name }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="w-full md:w-1/5 my-3 md:my-0">
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-700">Status:</span>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                    {% if item.shipping_status == 'processing' %}bg-yellow-100 text-yellow-800
+                                    {% elif item.shipping_status == 'shipped' %}bg-blue-100 text-blue-800
+                                    {% elif item.shipping_status == 'delivered' %}bg-green-100 text-green-800
+                                    {% elif item.shipping_status == 'returned' %}bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ item.shipping_status|title }}
+                                </span>
+                            </div>
+                            {% if item.estimated_delivery %}
+                                <div class="text-sm text-gray-600">
+                                    Est. delivery: {{ item.estimated_delivery|date:"M d, Y" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="w-full md:w-1/5 text-right">
+                            <div class="text-lg font-semibold text-gray-800">${{ item.subtotal }}</div>
+                            {% if item.shipping_status == 'delivered' and item.product %}
+                                <a href="{% url 'marketplace:add_product_review' product_id=item.product.product_id %}" 
+                                   class="inline-block mt-2 text-sm text-green-600 hover:text-green-800">
+                                    Write a Review
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Address Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Shipping Address</h3>
+            <div class="whitespace-pre-line text-gray-700">{{ order.shipping_address }}</div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Billing Address</h3>
+            <div class="whitespace-pre-line text-gray-700">{{ order.billing_address }}</div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex {% if order.status == 'pending' %}justify-between{% else %}justify-between{% endif %} mb-8">
+        <a href="{% url 'marketplace:my_orders' %}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition duration-150">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to My Orders
+        </a>
+        
+        <div class="flex space-x-4">
+            {% if order.status == 'delivered' %}
+                <a href="#" class="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Contact Support
+                </a>
+            {% elif order.status == 'pending' %}
+                <a href="{% url 'marketplace:payment' order_id=order.order_id %}" class="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Pay Now
+                </a>
+                <a href="{% url 'marketplace:cancel_order' order_id=order.order_id %}" class="inline-flex items-center px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancel Order
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

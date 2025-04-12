@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriTrace{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .left-drawer {
+            background-color: #3D8361;
+            color: #EAD7A7;
+            width: 280px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 20;
+        }
+        
+        .left-drawer.collapsed {
+            width: 80px;
+            overflow: hidden;
+        }
+        
+        .left-drawer.collapsed .nav-text,
+        .left-drawer.collapsed .logo-text {
+            display: none;
+        }
+        
+        .left-drawer.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px 0;
+        }
+        
+        .nav-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .top-navbar {
+            background-color: #EAD7A7;
+            color: #3D8361;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .nav-link {
+            color: #EAD7A7;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .nav-item {
+            padding: 12px 24px;
+            margin: 4px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .active-nav {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid #EAD7A7;
+        }
+        
+        .search-container {
+            position: relative;
+            width: 200px;
+        }
+        
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px 8px 40px;
+            width: 100%;
+            color: #3D8361;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            background-color: white;
+            outline: none;
+            box-shadow: 0 0 0 2px #3D8361;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #3D8361;
+            pointer-events: none;
+        }
+        
+        .profile-btn {
+            transition: all 0.2s ease;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #3D8361;
+            color: #EAD7A7;
+            font-weight: 600;
+        }
+        
+        .profile-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .toggle-drawer {
+            background: none;
+            border: none;
+            color: #3D8361;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 16px;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-drawer:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        
+        body.drawer-collapsed .left-drawer {
+            margin-left: -280px;
+        }
+        
+        body.drawer-collapsed .left-drawer.collapsed {
+            margin-left: -80px;
+        }
+    </style>
+</head>
+
+<body class="{% if request.session.drawer_collapsed %}drawer-collapsed{% endif %}">
+    {% include 'messages.html' %}
+    <!-- Left Drawer -->
+    <div class="left-drawer {% if request.session.drawer_collapsed %}collapsed{% endif %}">
+        <!-- Top Logo Section -->
+        <div class="p-6 flex items-center justify-center border-b border-[#4a8f6e]">
+            <img src="/static/images/agri-trace-logo.svg" alt="Logo" class="h-10 mr-3">
+            <span class="text-2xl font-bold logo-text">AgriTrace</span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="nav-container p-4">
+            <a href="#" class="nav-item flex items-center nav-link" onclick="setActiveNav(this)">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            
+            <a href="#" class="nav-item flex items-center nav-link" onclick="setActiveNav(this)">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <span class="nav-text">AgriTrack</span>
+            </a>
+            
+            <a href="#" class="nav-item flex items-center nav-link" onclick="setActiveNav(this)">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <span class="nav-text">Smart Weather</span>
+            </a>
+            
+            <a href="{% url 'marketplace:marketplace' %}" class="nav-item flex items-center nav-link" onclick="setActiveNav(this)">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <span class="nav-text">Marketplace</span>
+            </a>
+            
+            <a href="#" class="nav-item flex items-center nav-link" onclick="setActiveNav(this)">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="nav-text">Calendar</span>
+            </a>
+        </div>
+        
+        <!-- Bottom Logout Section -->
+        <div class="p-4 border-t border-[#4a8f6e]">
+            <a href="{% url 'logout' %}" class="nav-item flex items-center nav-link">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span class="nav-text">Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+<div class="flex-1 flex flex-col main-content">
+    <!-- Top Navbar -->
+<div class="top-navbar flex items-center justify-between px-4 py-3 bg-white shadow">
+    <!-- Toggle Button -->
+    <button class="toggle-drawer text-gray-600 hover:text-black focus:outline-none" onclick="toggleDrawer()">
+        ☰
+    </button>
+
+    <!-- Page Title -->
+    <div class="flex-1 text-center">
+        <h1 class="text-xl font-semibold">{% block page_title %}Dashboard{% endblock %}</h1>
+    </div>
+
+    <!-- Cart, Orders and Profile -->
+    <div class="flex items-center space-x-6">
+        <!-- Orders Button -->
+        <a href="{% url 'marketplace:my_orders' %}" class="relative group">
+            <svg class="w-6 h-6 text-gray-600 group-hover:text-black transition duration-200" fill="none"
+                 stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+        </a>
+
+        <!-- Cart Icon Button -->
+        <a href="{% url 'marketplace:cart_detail' %}" class="relative group">
+            <svg class="w-6 h-6 text-gray-600 group-hover:text-black transition duration-200" fill="none"
+                 stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
+            </svg>
+            <!-- Optional badge for cart count -->
+           
+        </a>
+
+        <!-- Profile Button -->
+        <a href="{% url 'marketplace:profile' %}" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full font-medium hover:bg-gray-200 transition">
+            {{ user.username|first|upper }}
+        </a>
+    </div>
+</div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 bg-gray-50">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+
+    <script>
+        // Set active navigation item
+        function setActiveNav(clickedElement) {
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active-nav');
+            });
+            
+            // Add active class to clicked item
+            clickedElement.classList.add('active-nav');
+            
+            // Store the active item in localStorage
+            const navText = clickedElement.querySelector('.nav-text').textContent;
+            localStorage.setItem('activeNav', navText);
+        }
+        
+        // Restore active nav on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeNavText = localStorage.getItem('activeNav');
+            if (activeNavText) {
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    if (item.querySelector('.nav-text') && item.querySelector('.nav-text').textContent === activeNavText) {
+                        item.classList.add('active-nav');
+                    }
+                });
+            } else {
+                // Default to Dashboard if no active nav is stored
+                const navItems = document.querySelectorAll('.nav-item');
+                if (navItems.length > 0) {
+                    navItems[0].classList.add('active-nav');
+                }
+            }
+        });
+        
+        function toggleDrawer() {
+            const drawer = document.querySelector('.left-drawer');
+            const body = document.querySelector('body');
+            
+            // Toggle the collapsed class on the drawer
+            drawer.classList.toggle('collapsed');
+            
+            // Toggle the drawer-collapsed class on the body
+            body.classList.toggle('drawer-collapsed');
+            
+            // Get CSRF token from cookie
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            // Send AJAX request to save state in session
+            const isCollapsed = drawer.classList.contains('collapsed');
+            const csrftoken = getCookie('csrftoken');
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('collapsed', isCollapsed);
+            
+            fetch('/toggle-drawer/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

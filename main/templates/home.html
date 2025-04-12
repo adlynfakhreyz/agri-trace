@@ -7,12 +7,17 @@
     <div class="container mx-auto py-16 px-6">
         <div class="flex flex-col md:flex-row items-center">
             <div class="w-full md:w-1/2 pr-0 md:pr-12 mb-12 md:mb-0">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6">Kelola Pertanian Lebih Mudah dengan AgriTrace</h1>
-                <p class="text-lg mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6" style="color: #fffd7d;">Kelola Pertanian Lebih Mudah dengan AgriTrace</h1>
+                <p class="text-lg mb-8" style="color: #E2E1A2;">
                     Pantau, kelola, dan optimalkan hasil pertanianmu dengan AgriTrace. 
                     Mulai dari perencanaan, pemantauan, hingga panen dalam satu aplikasi!
                 </p>
-                <a href="#" class="btn-primary">Get Started</a>
+                <a href="{% url 'login' %}" class="btn-primary">Get Started</a>
+                {% if not user.is_authenticated %}
+                <p class="mt-4 text-sm">
+                    Don't have an account? <a href="{% url 'register' %}" class="text-[#EAD7A7] hover:text-white underline">Register here</a>
+                </p>
+                {% endif %}
             </div>
             <div class="w-full md:w-1/2">
                 <img src="{% static 'images/home-img.svg' %}" alt="Farmers working with AgriTrace" class="w-full max-w-lg mx-auto">

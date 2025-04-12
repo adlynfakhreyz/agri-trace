@@ -1,0 +1,259 @@
+{% extends "main_base.html" %}
+
+{% block title %}Checkout - AgriTrace{% endblock %}
+{% block page_title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Progress Steps -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <span class="text-sm font-medium mt-2 text-green-600">Cart</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-green-600"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                    <span class="font-semibold">2</span>
+                </div>
+                <span class="text-sm font-medium mt-2 text-green-600">Checkout</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-gray-300"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
+                    <span class="font-semibold">3</span>
+                </div>
+                <span class="text-sm font-medium mt-2 text-gray-600">Payment</span>
+            </div>
+
+            <div class="h-1 flex-1 mx-4 bg-gray-300"></div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
+                    <span class="font-semibold">4</span>
+                </div>
+                <span class="text-sm font-medium mt-2 text-gray-600">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Shipping & Billing Information -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-8 rounded-lg shadow-md mb-6">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Shipping Information</h2>
+                
+                <form method="post" id="checkout-form">
+                    {% csrf_token %}
+                    
+                    <!-- Shipping Address -->
+                    <div class="mb-6">
+                        <label for="id_shipping_address" class="block text-sm font-medium text-gray-700 mb-2">Shipping Address</label>
+                        {{ shipping_form.shipping_address }}
+                        {% if shipping_form.shipping_address.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ shipping_form.shipping_address.errors }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Save as default checkbox -->
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="save_default" id="save_default" class="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <span class="text-sm text-gray-700">Save as default shipping address</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Same as shipping checkbox -->
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="same_as_shipping" id="same_as_shipping" class="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <span class="text-sm text-gray-700">Use same address for billing</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Billing Address -->
+                    <div class="mb-8" id="billing-address-container">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Billing Information</h2>
+                        <label for="id_billing_address" class="block text-sm font-medium text-gray-700 mb-2">Billing Address</label>
+                        {{ shipping_form.billing_address }}
+                        {% if shipping_form.billing_address.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ shipping_form.billing_address.errors }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Shipping Method Selection -->
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Shipping Options</h2>
+                        
+                        {% for seller_group in sellers_items %}
+                        <div class="mb-8 p-6 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                            <h4 class="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
+                                </svg>
+                                Items from {{ seller_group.seller.business_name }}
+                            </h4>
+                            
+                            <!-- List items from this seller -->
+                            <div class="mb-6 pl-4 border-l-2 border-green-100">
+                                {% for item in seller_group.items %}
+                                <div class="flex justify-between items-center mb-3 hover:bg-gray-50 p-2 rounded-md">
+                                    <div class="flex items-center">
+                                        <span class="text-gray-600 font-medium">{{ item.product.name }} × {{ item.quantity }}</span>
+                                    </div>
+                                    <span class="font-semibold text-gray-800">${{ item.subtotal }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Shipping options for this seller -->
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <p class="text-sm font-semibold text-gray-700 mb-3">Select shipping method:</p>
+                                {% for service in shipping_services %}
+                                <label class="flex items-center justify-between p-3 mb-2 border border-gray-200 rounded-md hover:border-green-300 hover:bg-green-50 transition duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <input type="radio" name="shipping_service" value="{{ service.shipping_service_id }}" 
+                                               class="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" required>
+                                        <input type="hidden" name="seller_{{ service.shipping_service_id }}" value="{{ seller_group.seller.id }}">
+                                        <div>
+                                            <span class="font-medium text-gray-800">{{ service.name }}</span>
+                                            <p class="text-sm text-gray-500">Estimated delivery: {{ service.estimated_days }} days</p>
+                                        </div>
+                                    </div>
+                                    <span class="font-medium text-gray-800">${{ service.base_price }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md sticky top-20">
+                <h2 class="text-xl font-bold mb-6 text-gray-800 border-b pb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd" />
+                    </svg>
+                    Order Summary
+                </h2>
+                
+                <!-- Items summary -->
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Items ({{ cart.items.count }}):</span>
+                        <span class="font-medium text-gray-800">${{ cart.total_price }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Shipping:</span>
+                        <span class="text-gray-800">Calculated at checkout</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Tax:</span>
+                        <span class="text-gray-800">Calculated at checkout</span>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <p class="text-lg font-bold text-gray-800">Estimated Total:</p>
+                        <p class="text-lg font-bold text-green-600">${{ cart.total_price }}</p>
+                    </div>
+                </div>
+                
+                <button type="submit" form="checkout-form" class="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                    </svg>
+                    Proceed to Payment
+                </button>
+                
+                <div class="mt-6 text-center">
+                    <a href="{% url 'marketplace:cart_detail' %}" class="text-sm text-green-600 hover:text-green-700 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Return to Cart
+                    </a>
+                </div>
+                
+                <!-- Security badges -->
+                <div class="mt-8 border-t border-gray-200 pt-6">
+                    <div class="flex justify-center space-x-4 mb-4">
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <div class="text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-center text-gray-500">Your payment information is processed securely. We do not store credit card details.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle "Same as shipping" checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        const sameAsShipping = document.getElementById('same_as_shipping');
+        const billingContainer = document.getElementById('billing-address-container');
+        const shippingAddress = document.getElementById('id_shipping_address');
+        const billingAddress = document.getElementById('id_billing_address');
+        
+        // Function to handle visibility and copying
+        function handleSameAsShipping() {
+            if (sameAsShipping.checked) {
+                billingContainer.style.display = 'none';
+                billingAddress.value = shippingAddress.value;
+            } else {
+                billingContainer.style.display = 'block';
+            }
+        }
+        
+        // Set initial state
+        handleSameAsShipping();
+        
+        // Add event listener for changes
+        sameAsShipping.addEventListener('change', handleSameAsShipping);
+        
+        // Update billing when shipping changes if same-as-shipping is checked
+        shippingAddress.addEventListener('change', function() {
+            if (sameAsShipping.checked) {
+                billingAddress.value = shippingAddress.value;
+            }
+        });
+        
+        // Add subtle hover effect to shipping method options
+        const shippingOptions = document.querySelectorAll('input[name="shipping_service"]');
+        shippingOptions.forEach(option => {
+            option.parentElement.parentElement.addEventListener('click', function() {
+                option.checked = true;
+            });
+        });
+    });
+</script>
+{% endblock %}

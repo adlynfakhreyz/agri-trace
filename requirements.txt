@@ -5,3 +5,8 @@ psycopg2-binary
 requests
 urllib3
 python-decouple
+pyotp
+qrcode
+qrcode[pil]
+django-widget-tweaks
+pytz
