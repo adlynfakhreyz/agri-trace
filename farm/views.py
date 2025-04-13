@@ -74,7 +74,7 @@ def farm_create(request):
 
 @login_required
 def farm_detail(request, farm_id):
-    """View for displaying details of a specific farm"""
+    """View for displaying details of a specific farm with analytics"""
     # Get the farm or raise 404
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
     
@@ -84,17 +84,129 @@ def farm_detail(request, farm_id):
     except FarmCondition.DoesNotExist:
         farm_condition = None
     
+    # Get fields for this farm
+    fields = farm.fields.all()
+    
     # Get crops for this farm
     crops = Crop.objects.filter(field__farm=farm)
+    active_crops = crops.filter(is_harvested=False)
+    harvested_crops = crops.filter(is_harvested=True)
     
     # Get recent activities
     recent_activities = farm.activities.order_by('-timestamp')[:5]
+    
+    # Analytics: Activity counts by type
+    from django.db.models import Count
+    activity_counts = farm.activities.values('activity_type').annotate(count=Count('activity_type')).order_by('activity_type')
+    
+    # Create a dictionary with all activity types, setting count to 0 for types with no activities
+    activity_types_dict = {activity_type: 0 for activity_type, _ in ActivityLog.ACTIVITY_CHOICES}
+    for item in activity_counts:
+        activity_types_dict[item['activity_type']] = item['count']
+    
+    # Analytics: Crop type distribution
+    crop_type_counts = crops.values('crop_type').annotate(count=Count('crop_type')).order_by('-count')
+    
+    # Analytics: Yields from harvested crops
+    from django.db.models import Sum, Avg
+    harvest_stats = {}
+    if harvested_crops.exists():
+        harvest_logs = HarvestingLog.objects.filter(crop__in=harvested_crops)
+        total_yield = harvest_logs.aggregate(total=Sum('yield_amount'))['total'] or 0
+        avg_yield = harvest_logs.aggregate(avg=Avg('yield_amount'))['avg'] or 0
+        harvest_stats = {
+            'total_yield': total_yield,
+            'avg_yield': avg_yield,
+            'harvest_count': harvested_crops.count()
+        }
+    
+    # Analytics: Field utilization
+    field_stats = {}
+    if fields.exists():
+        total_field_area = fields.aggregate(total=Sum('size'))['total'] or 0
+        if total_field_area > 0:
+            # Calculate percentage of farm area being used for fields
+            field_utilization = (total_field_area / farm.size) * 100 if farm.size > 0 else 0
+            field_stats = {
+                'total_area': total_field_area,
+                'utilization': field_utilization,
+                'count': fields.count()
+            }
+    
+    # Analytics: Most recent activities per field
+    field_latest_activities = []
+    for field in fields:
+        latest_activities = ActivityLog.objects.filter(
+            farm=farm,
+            preparationlog__field=field
+        ).order_by('-timestamp')[:1]
+        
+        if latest_activities.exists():
+            field_latest_activities.append({
+                'field': field,
+                'activity': latest_activities[0]
+            })
+    
+    # Analytics: Activity trends over time (last 6 months)
+    from django.utils import timezone
+    import datetime
+    
+    end_date = timezone.now().date()
+    start_date = end_date - datetime.timedelta(days=180)  # Last 6 months
+    
+    from django.db.models.functions import TruncMonth
+    
+    monthly_activities = farm.activities.filter(
+        timestamp__date__gte=start_date,
+        timestamp__date__lte=end_date
+    ).annotate(
+        month=TruncMonth('timestamp')
+    ).values('month').annotate(
+        count=Count('log_id')
+    ).order_by('month')
+    
+    # Format for chart
+    months = []
+    counts = []
+    for entry in monthly_activities:
+        months.append(entry['month'].strftime('%b %Y'))
+        counts.append(entry['count'])
+    
+    # Analytics: Calculate days since last maintenance for each active crop
+    maintenance_status = []
+    for crop in active_crops:
+        maintenance_logs = MaintenanceLog.objects.filter(crop=crop).order_by('-activity_log__timestamp')
+        if maintenance_logs.exists():
+            last_maintenance = maintenance_logs[0].activity_log.timestamp.date()
+            days_since_maintenance = (timezone.now().date() - last_maintenance).days
+            maintenance_status.append({
+                'crop': crop,
+                'days_since_maintenance': days_since_maintenance,
+                'last_maintenance_date': last_maintenance
+            })
+    
+    # Organize analytics data
+    analytics = {
+        'activity_counts': activity_types_dict,
+        'crop_type_counts': list(crop_type_counts),
+        'harvest_stats': harvest_stats,
+        'field_stats': field_stats,
+        'field_latest_activities': field_latest_activities,
+        'monthly_activity_data': {
+            'months': months,
+            'counts': counts
+        },
+        'maintenance_status': maintenance_status
+    }
     
     return render(request, 'farm_detail.html', {
         'farm': farm,
         'farm_condition': farm_condition,
         'crops': crops,
-        'recent_activities': recent_activities
+        'active_crops': active_crops,
+        'harvested_crops': harvested_crops,
+        'recent_activities': recent_activities,
+        'analytics': analytics
     })
 
 @login_required

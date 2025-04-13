@@ -1,4 +1,4 @@
-from pyexpat.errors import messages
+from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 
@@ -8,7 +8,7 @@ from farm.models import ActivityLog, Crop, Farm
 def home_view(request):
     return render(request, 'home.html')
 
-@login_required  
+@login_required
 def dashboard_view(request):
     """Dashboard view showing farms overview"""
     # Check if user has a farmer profile
@@ -27,7 +27,7 @@ def dashboard_view(request):
         })
     
     # Get total crops 
-    total_crops = Crop.objects.filter(farm__farmer=request.user.farmer).count()
+    total_crops = Crop.objects.filter(field__farm__in=farms).count()
     
     # Get some recent activities
     recent_activities = ActivityLog.objects.filter(

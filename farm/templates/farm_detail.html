@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load farmutils %}
 
 {% block title %}{{ farm.name }} - Farm Details - AgriTrace{% endblock %}
 {% block page_title %}{{ farm.name }}{% endblock %}
@@ -39,7 +40,205 @@
             </div>
             <div class="bg-gray-50 p-4 rounded-md">
                 <p class="text-sm text-gray-600">Crops</p>
-                <p class="text-lg font-semibold">{{ farm.crops.count }}</p>
+                <p class="text-lg font-semibold">{{ crops.count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Dashboard -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Farm Analytics</h2>
+        
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="rounded-full bg-green-100 p-3 mr-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Fields</p>
+                        <h3 class="text-2xl font-bold">{{ analytics.field_stats.count|default:"0" }}</h3>
+                        {% if analytics.field_stats.utilization %}
+                        <p class="text-xs text-gray-600">{{ analytics.field_stats.utilization|floatformat:1 }}% of farm area utilized</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="rounded-full bg-blue-100 p-3 mr-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Active Crops</p>
+                        <h3 class="text-2xl font-bold">{{ active_crops.count }}</h3>
+                        <p class="text-xs text-gray-600">{{ harvested_crops.count }} harvested</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="rounded-full bg-yellow-100 p-3 mr-4">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Yield</p>
+                        <h3 class="text-2xl font-bold">{{ analytics.harvest_stats.total_yield|default:"0" }} kg</h3>
+                        {% if analytics.harvest_stats.avg_yield %}
+                        <p class="text-xs text-gray-600">{{ analytics.harvest_stats.avg_yield|floatformat:1 }} kg avg per harvest</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="rounded-full bg-purple-100 p-3 mr-4">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Activities</p>
+                        <h3 class="text-2xl font-bold">{{ farm.activities.count }}</h3>
+                        <p class="text-xs text-gray-600">Last: {{ recent_activities.0.timestamp|date:"M d, Y"|default:"None" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Activity Distribution Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activity Distribution</h3>
+                
+                <div class="w-full h-64" id="activityChart"></div>
+                
+                <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div class="text-center">
+                        <div class="rounded-full w-3 h-3 bg-green-500 mx-auto mb-1"></div>
+                        <p class="text-xs text-gray-600">Planting: {{ analytics.activity_counts.planting }}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="rounded-full w-3 h-3 bg-blue-500 mx-auto mb-1"></div>
+                        <p class="text-xs text-gray-600">Maintenance: {{ analytics.activity_counts.maintenance }}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="rounded-full w-3 h-3 bg-yellow-500 mx-auto mb-1"></div>
+                        <p class="text-xs text-gray-600">Harvesting: {{ analytics.activity_counts.harvesting }}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="rounded-full w-3 h-3 bg-purple-500 mx-auto mb-1"></div>
+                        <p class="text-xs text-gray-600">Preparation: {{ analytics.activity_counts.preparation }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monthly Activity Trend -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activity Trends (Last 6 Months)</h3>
+                <div class="w-full h-64" id="activityTrendChart"></div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Crop Distribution -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Crop Distribution</h3>
+                
+                {% if analytics.crop_type_counts %}
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop Type</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for crop_data in analytics.crop_type_counts %}
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ crop_data.crop_type }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ crop_data.count }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ crop_data.count|divisible:crops.count|multiply:100 }}%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-600">{{ crop_data.count|divisible:crops.count|multiply:100|floatformat:1 }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <p class="text-gray-600">No crops have been planted yet.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Maintenance Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Maintenance Status</h3>
+                
+                {% if analytics.maintenance_status %}
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Maintenance</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for status in analytics.maintenance_status %}
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ status.crop.crop_type }}</div>
+                                    <div class="text-xs text-gray-500">{{ status.crop.field.name }}</div>
+                                </td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                    {{ status.last_maintenance_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-4 py-2 whitespace-nowrap">
+                                    {% if status.days_since_maintenance <= 7 %}
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Good ({{ status.days_since_maintenance }} days)
+                                        </span>
+                                    {% elif status.days_since_maintenance <= 14 %}
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Due Soon ({{ status.days_since_maintenance }} days)
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Overdue ({{ status.days_since_maintenance }} days)
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <p class="text-gray-600">No maintenance data available for active crops.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -213,4 +412,87 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+<!-- Initialize Charts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activity Distribution Chart
+    var activityChartCtx = document.getElementById('activityChart').getContext('2d');
+    var activityChart = new Chart(activityChartCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Planting', 'Maintenance', 'Harvesting', 'Preparation', 'Other'],
+            datasets: [{
+                data: [
+                    {{ analytics.activity_counts.planting }},
+                    {{ analytics.activity_counts.maintenance }},
+                    {{ analytics.activity_counts.harvesting }},
+                    {{ analytics.activity_counts.preparation }},
+                    {{ analytics.activity_counts.other }}
+                ],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',  // Green
+                    'rgba(59, 130, 246, 0.8)', // Blue
+                    'rgba(234, 179, 8, 0.8)',  // Yellow
+                    'rgba(168, 85, 247, 0.8)', // Purple
+                    'rgba(156, 163, 175, 0.8)' // Gray
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            cutout: '70%'
+        }
+    });
+    
+    // Monthly Activity Trend Chart
+    var months = {{ analytics.monthly_activity_data.months|safe }};
+    var counts = {{ analytics.monthly_activity_data.counts|safe }};
+    
+    var activityTrendCtx = document.getElementById('activityTrendChart').getContext('2d');
+    var activityTrendChart = new Chart(activityTrendCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Activities',
+                data: counts,
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                borderColor: 'rgba(34, 197, 94, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
 {% endblock %}
