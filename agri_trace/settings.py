@@ -83,13 +83,14 @@ WSGI_APPLICATION = 'agri_trace.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('PODS_DB_NAME'),
-        'USER': os.environ.get('PODS_DB_USER'),
+        'USER': os.environ.get('PODS_DB_USERNAME'),
         'PASSWORD': os.environ.get('PODS_DB_PASSWORD'),
-        'HOST': os.environ.get('PODS_DB_HOST'), 
+        'HOST': os.environ.get('PODS_DB_HOST'),
         'PORT': os.environ.get('PODS_DB_PORT'),
     }
 }
