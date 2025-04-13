@@ -278,3 +278,366 @@ def crop_detail(request, farm_id, crop_id):
         'harvest_activity': harvest_activity
     })
     
+@login_required
+def activity_log_list(request, farm_id):
+    """View for listing all activity logs for a specific farm"""
+    # Get the farm or raise 404
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    # Get all activities for this farm, newest first
+    activities = farm.activities.all().order_by('-timestamp')
+    
+    # Filter by activity type if specified
+    activity_type = request.GET.get('type')
+    if activity_type:
+        activities = activities.filter(activity_type=activity_type)
+    
+    return render(request, 'activity_log_list.html', {
+        'farm': farm,
+        'activities': activities,
+        'activity_type': activity_type
+    })
+
+@login_required
+@transaction.atomic
+def activity_log_create(request, farm_id):
+    """View for creating a new activity log with the updated workflow"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    if request.method == 'POST':
+        activity_form = ActivityLogForm(request.POST)
+        activity_type = request.POST.get('activity_type')
+        
+        # Determine which specialized form to use based on activity type
+        specialized_form = None
+        
+        if activity_type == 'preparation':
+            specialized_form = PreparationLogForm(request.POST, farm=farm)
+        elif activity_type == 'planting':
+            specialized_form = PlantingLogForm(request.POST, farm=farm)
+        elif activity_type == 'maintenance':
+            specialized_form = MaintenanceLogForm(request.POST, farm=farm)
+        elif activity_type == 'harvesting':
+            specialized_form = HarvestingLogForm(request.POST, farm=farm)
+        
+        if activity_form.is_valid() and (specialized_form is None or specialized_form.is_valid()):
+            # Create activity log
+            activity = activity_form.save(commit=False)
+            activity.farm = farm
+            activity.save()
+            
+            # Create specialized log based on activity type
+            if activity_type == 'preparation':
+                preparation_log = specialized_form.save(commit=False)
+                preparation_log.activity_log = activity
+                preparation_log.save()
+                
+                messages.success(request, "Land preparation activity logged successfully!")
+                
+            elif activity_type == 'planting':
+                # Create planting log
+                planting_log = specialized_form.save(commit=False)
+                planting_log.activity_log = activity
+                planting_log.save()
+                
+                # Create a new crop associated with this planting activity
+                field = specialized_form.cleaned_data['field']
+                crop_type = specialized_form.cleaned_data['crop_type']
+                expected_harvest_date = specialized_form.cleaned_data['expected_harvest_date']
+                seed_variety = specialized_form.cleaned_data['seed_variety']
+                
+                # Create crop instance
+                crop = Crop.objects.create(
+                    field=field,
+                    crop_type=crop_type,
+                    planting_date=activity.timestamp.date(),
+                    expected_harvest_date=expected_harvest_date,
+                    seed_variety=seed_variety,
+                    planting_activity=planting_log
+                )
+                
+                messages.success(request, f"Planting activity logged successfully! A new {crop_type} crop has been added.")
+                
+            elif activity_type == 'maintenance':
+                maintenance_log = specialized_form.save(commit=False)
+                maintenance_log.activity_log = activity
+                maintenance_log.save()
+                
+                crop = specialized_form.cleaned_data['crop']
+                messages.success(request, f"Maintenance activity for {crop.crop_type} logged successfully!")
+                
+            elif activity_type == 'harvesting':
+                harvesting_log = specialized_form.save(commit=False)
+                harvesting_log.activity_log = activity
+                harvesting_log.save()
+                
+                # The crop will be automatically marked as harvested by the save method of HarvestingLog
+                crop = specialized_form.cleaned_data['crop']
+                messages.success(request, f"Harvesting activity for {crop.crop_type} logged successfully! The crop has been marked as harvested.")
+            
+            return redirect('farm:activity_log_detail', farm_id=farm.farm_id, log_id=activity.log_id)
+    else:
+        activity_form = ActivityLogForm(initial={'timestamp': timezone.now()})
+        specialized_form = None
+    
+    # Check if farm has any fields for preparation or planting activities
+    has_fields = farm.fields.exists()
+    
+    # Check if farm has any active crops for maintenance and harvesting
+    has_active_crops = Crop.objects.filter(field__farm=farm, is_harvested=False).exists()
+    
+    return render(request, 'activity_log_form.html', {
+        'farm': farm,
+        'activity_form': activity_form,
+        'specialized_form': specialized_form,
+        'action': 'Create',
+        'has_fields': has_fields,
+        'has_active_crops': has_active_crops
+    })
+    
+@login_required
+def activity_log_detail(request, farm_id, log_id):
+    """View for displaying details of a specific activity log"""
+    # Get the farm or raise 404
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    # Get the activity log or raise 404
+    activity = get_object_or_404(ActivityLog, log_id=log_id, farm=farm)
+    
+    # Get the specific type of log if it exists
+    specialized_log = None
+    if activity.activity_type == 'preparation':
+        try:
+            specialized_log = activity.preparationlog
+        except PreparationLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'planting':
+        try:
+            specialized_log = activity.plantinglog
+        except PlantingLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'maintenance':
+        try:
+            specialized_log = activity.maintenancelog
+        except MaintenanceLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'harvesting':
+        try:
+            specialized_log = activity.harvestinglog
+        except HarvestingLog.DoesNotExist:
+            pass
+    
+    # Get all custom fields for this activity
+    fields = activity.fields.all()
+    
+    return render(request, 'activity_log_detail.html', {
+        'farm': farm,
+        'activity': activity,
+        'specialized_log': specialized_log,
+        'fields': fields
+    })
+
+@login_required
+@transaction.atomic
+def activity_log_update(request, farm_id, log_id):
+    """View for updating an existing activity log"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    activity = get_object_or_404(ActivityLog, log_id=log_id, farm=farm)
+    
+    # Get the specialized log instance if it exists
+    specialized_log = None
+    specialized_form = None
+    
+    if activity.activity_type == 'preparation':
+        try:
+            specialized_log = activity.preparationlog
+            specialized_form = PreparationLogForm(instance=specialized_log, farm=farm)
+        except PreparationLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'planting':
+        try:
+            specialized_log = activity.plantinglog
+            specialized_form = PlantingLogForm(instance=specialized_log, farm=farm)
+            
+            # Pre-fill crop fields if this planting activity has a crop
+            try:
+                crop = specialized_log.crop
+                initial_data = {
+                    'crop_type': crop.crop_type,
+                    'expected_harvest_date': crop.expected_harvest_date
+                }
+                specialized_form = PlantingLogForm(
+                    instance=specialized_log, 
+                    farm=farm, 
+                    initial=initial_data
+                )
+            except Crop.DoesNotExist:
+                pass
+                
+        except PlantingLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'maintenance':
+        try:
+            specialized_log = activity.maintenancelog
+            specialized_form = MaintenanceLogForm(instance=specialized_log, farm=farm)
+        except MaintenanceLog.DoesNotExist:
+            pass
+    elif activity.activity_type == 'harvesting':
+        try:
+            specialized_log = activity.harvestinglog
+            specialized_form = HarvestingLogForm(instance=specialized_log, farm=farm)
+        except HarvestingLog.DoesNotExist:
+            pass
+    
+    if request.method == 'POST':
+        activity_form = ActivityLogForm(request.POST, instance=activity)
+        
+        # Handle specialized form if it exists
+        if specialized_log:
+            if activity.activity_type == 'preparation':
+                specialized_form = PreparationLogForm(request.POST, instance=specialized_log, farm=farm)
+            elif activity.activity_type == 'planting':
+                specialized_form = PlantingLogForm(request.POST, instance=specialized_log, farm=farm)
+            elif activity.activity_type == 'maintenance':
+                specialized_form = MaintenanceLogForm(request.POST, instance=specialized_log, farm=farm)
+            elif activity.activity_type == 'harvesting':
+                specialized_form = HarvestingLogForm(request.POST, instance=specialized_log, farm=farm)
+        
+        if activity_form.is_valid() and (specialized_form is None or specialized_form.is_valid()):
+            activity = activity_form.save()
+            
+            if specialized_form:
+                specialized_log = specialized_form.save()
+                
+                # Update associated crop if this is a planting activity
+                if activity.activity_type == 'planting':
+                    try:
+                        crop = specialized_log.crop
+                        crop.crop_type = specialized_form.cleaned_data.get('crop_type', crop.crop_type)
+                        crop.expected_harvest_date = specialized_form.cleaned_data.get('expected_harvest_date', crop.expected_harvest_date)
+                        crop.seed_variety = specialized_log.seed_variety
+                        crop.save()
+                    except Crop.DoesNotExist:
+                        # Create a new crop if one doesn't exist
+                        field = specialized_form.cleaned_data['field']
+                        crop_type = specialized_form.cleaned_data['crop_type']
+                        expected_harvest_date = specialized_form.cleaned_data['expected_harvest_date']
+                        
+                        crop = Crop.objects.create(
+                            field=field,
+                            crop_type=crop_type,
+                            planting_date=activity.timestamp.date(),
+                            expected_harvest_date=expected_harvest_date,
+                            seed_variety=specialized_log.seed_variety,
+                            planting_activity=specialized_log
+                        )
+            
+            messages.success(request, "Activity log updated successfully!")
+            return redirect('farm:activity_log_detail', farm_id=farm.farm_id, log_id=activity.log_id)
+    else:
+        activity_form = ActivityLogForm(instance=activity)
+    
+    # Set read-only for activity type (shouldn't change activity type on update)
+    activity_form.fields['activity_type'].widget.attrs['disabled'] = True
+    
+    return render(request, 'activity_log_form.html', {
+        'farm': farm,
+        'activity': activity,
+        'activity_form': activity_form,
+        'specialized_form': specialized_form,
+        'action': 'Update'
+    })
+    
+@login_required
+def activity_log_delete(request, farm_id, log_id):
+    """View for deleting an activity log"""
+    # Get the farm or raise 404
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    # Get the activity log or raise 404
+    activity = get_object_or_404(ActivityLog, log_id=log_id, farm=farm)
+    
+    if request.method == 'POST':
+        # Handle each specific type of activity log
+        activity_type = activity.activity_type
+        
+        if activity_type == 'planting':
+            # If this is a planting activity, we need to check if it has a crop associated
+            try:
+                crop = activity.plantinglog.crop
+                # If the crop has maintenance or harvesting activities, prevent deletion
+                if crop.maintenance_activities.exists() or hasattr(crop, 'harvest_activity'):
+                    messages.error(request, "Cannot delete this planting activity because it has dependent maintenance or harvesting activities. Delete those first.")
+                    return redirect('farm:activity_log_detail', farm_id=farm.farm_id, log_id=activity.log_id)
+                
+                # Otherwise, delete the crop first
+                crop.delete()
+            except (PlantingLog.DoesNotExist, Crop.DoesNotExist, AttributeError):
+                # If there's no plantinglog or associated crop, just continue
+                pass
+                
+        elif activity_type == 'harvesting':
+            # If this is a harvesting activity, we need to un-mark the crop as harvested
+            try:
+                crop = activity.harvestinglog.crop
+                crop.is_harvested = False
+                crop.harvest_date = None
+                crop.save()
+            except (HarvestingLog.DoesNotExist, Crop.DoesNotExist, AttributeError):
+                # If there's no harvestinglog or associated crop, just continue
+                pass
+        
+        # Now delete the activity log (this will cascade delete the specialized logs)
+        activity_type_display = activity.get_activity_type_display()
+        activity.delete()
+        
+        messages.success(request, f"{activity_type_display} activity deleted successfully!")
+        return redirect('farm:activity_log_list', farm_id=farm.farm_id)
+    
+    return render(request, 'activity_log_confirm_delete.html', {
+        'farm': farm,
+        'activity': activity
+    })
+
+@login_required
+def get_specialized_form(request, farm_id):
+    """AJAX view to get the specialized form based on activity type"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    activity_type = request.GET.get('activity_type')
+    
+    if not activity_type:
+        return JsonResponse({'error': 'Activity type is required'}, status=400)
+    
+    # Render the appropriate form template
+    if activity_type == 'preparation':
+        form = PreparationLogForm(farm=farm)
+        template = 'partials/preparation_form.html'
+    elif activity_type == 'planting':
+        form = PlantingLogForm(farm=farm)
+        template = 'partials/planting_form.html'
+    elif activity_type == 'maintenance':
+        form = MaintenanceLogForm(farm=farm)
+        template = 'partials/maintenance_form.html'
+    elif activity_type == 'harvesting':
+        form = HarvestingLogForm(farm=farm)
+        template = 'partials/harvesting_form.html'
+    else:
+        return JsonResponse({'html': ''})  # No specialized form for this type
+    
+    html = render(request, template, {'form': form}).content.decode('utf-8')
+    return JsonResponse({'html': html})
+
+@login_required
+def get_active_crops(request, farm_id):
+    """AJAX view to get active crops for a farm"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    field_id = request.GET.get('field_id')
+    
+    crops = Crop.objects.filter(field__farm=farm, is_harvested=False)
+    
+    if field_id:
+        crops = crops.filter(field_id=field_id)
+    
+    crops_data = [{'id': str(crop.crop_id), 'name': f"{crop.crop_type} - {crop.field.name}"} for crop in crops]
+    
+    return JsonResponse({'crops': crops_data})
