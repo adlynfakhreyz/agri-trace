@@ -1,0 +1,70 @@
+<!-- Maintenance Form Fields -->
+<div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
+    <h3 class="text-lg font-medium text-gray-900">Maintenance Details</h3>
+    
+    <!-- Crop Selection -->
+    <div>
+        <label for="{{ form.crop.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Crop
+        </label>
+        <div class="mt-1">
+            {{ form.crop }}
+        </div>
+        {% if form.crop.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.crop.errors|striptags }}
+            </p>
+        {% endif %}
+        
+        {% if not form.crop.field.queryset.exists %}
+            <p class="mt-2 text-sm text-yellow-600">
+                No active crops available. You need to <a href="#" class="text-blue-600 hover:underline" onclick="event.preventDefault(); window.location.href='{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=planting'">plant crops</a> before recording maintenance activities.
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Pesticide Applied Field -->
+    <div>
+        <label for="{{ form.pesticide_applied.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Pesticide Applied (L)
+        </label>
+        <div class="mt-1">
+            {{ form.pesticide_applied }}
+        </div>
+        {% if form.pesticide_applied.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.pesticide_applied.errors|striptags }}
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Irrigation Amount Field -->
+    <div>
+        <label for="{{ form.irrigation_amount.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Irrigation Amount (L)
+        </label>
+        <div class="mt-1">
+            {{ form.irrigation_amount }}
+        </div>
+        {% if form.irrigation_amount.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.irrigation_amount.errors|striptags }}
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Fertilizer Applied Field -->
+    <div>
+        <label for="{{ form.fertilizer_applied.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Fertilizer Applied (kg)
+        </label>
+        <div class="mt-1">
+            {{ form.fertilizer_applied }}
+        </div>
+        {% if form.fertilizer_applied.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.fertilizer_applied.errors|striptags }}
+            </p>
+        {% endif %}
+    </div>
+</div>

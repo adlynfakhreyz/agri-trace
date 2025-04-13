@@ -1,0 +1,110 @@
+<!-- Planting Form Fields -->
+<div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
+    <h3 class="text-lg font-medium text-gray-900">Planting Details</h3>
+    
+    <!-- Field Selection -->
+    <div>
+        <label for="{{ form.field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Field
+        </label>
+        <div class="mt-1">
+            {{ form.field }}
+        </div>
+        {% if form.field.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.field.errors|striptags }}
+            </p>
+        {% endif %}
+        
+        {% if not form.field.field.queryset.exists %}
+            <p class="mt-2 text-sm text-yellow-600">
+                No fields available. <a href="#" class="text-blue-600 hover:underline" onclick="event.preventDefault(); window.location.href='{% url 'farm:field_create' farm_id=farm.farm_id %}'">Add a field</a> first.
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Crop Information Section -->
+    <div class="border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-medium text-gray-800 mb-4">Crop Information</h4>
+        
+        <!-- Crop Type Field -->
+        <div class="mb-4">
+            <label for="{{ form.crop_type.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Crop Type
+            </label>
+            <div class="mt-1">
+                {{ form.crop_type }}
+            </div>
+            {% if form.crop_type.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.crop_type.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Expected Harvest Date Field -->
+        <div>
+            <label for="{{ form.expected_harvest_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Expected Harvest Date (Optional)
+            </label>
+            <div class="mt-1">
+                {{ form.expected_harvest_date }}
+            </div>
+            {% if form.expected_harvest_date.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.expected_harvest_date.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Planting Details Section -->
+    <div class="border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-medium text-gray-800 mb-4">Planting Details</h4>
+        
+        <!-- Seed Variety Field -->
+        <div class="mb-4">
+            <label for="{{ form.seed_variety.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Seed Variety
+            </label>
+            <div class="mt-1">
+                {{ form.seed_variety }}
+            </div>
+            {% if form.seed_variety.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.seed_variety.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Seed Quantity Field -->
+        <div class="mb-4">
+            <label for="{{ form.seed_quantity.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Seed Quantity (kg)
+            </label>
+            <div class="mt-1">
+                {{ form.seed_quantity }}
+            </div>
+            {% if form.seed_quantity.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.seed_quantity.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Fertilizer Applied Field -->
+        <div>
+            <label for="{{ form.fertilizer_applied.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Fertilizer Applied (kg)
+            </label>
+            <div class="mt-1">
+                {{ form.fertilizer_applied }}
+            </div>
+            {% if form.fertilizer_applied.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.fertilizer_applied.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>

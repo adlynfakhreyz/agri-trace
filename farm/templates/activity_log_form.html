@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Activity - {{ farm.name }} - AgriTrace{% endblock %}
+{% block page_title %}{{ action }} Activity{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex items-center">
+        <a href="{% if activity %}{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=activity.log_id %}{% else %}{% url 'farm:activity_log_list' farm_id=farm.farm_id %}{% endif %}" class="text-green-600 hover:text-green-700 mr-2">
+            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back
+        </a>
+    </div>
+
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ action }} Activity for {{ farm.name }}</h1>
+        
+        {% if not has_fields %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            You don't have any fields created for this farm yet. To record activities, you need to 
+                            <a href="{% url 'farm:field_create' farm_id=farm.farm_id %}" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                                create at least one field
+                            </a> first.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if action == 'Create' and activity_form.activity_type.value == 'maintenance' or activity_form.activity_type.value == 'harvesting' and not has_active_crops %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            You don't have any active crops in this farm. To record {{ activity_form.activity_type.value }} activities, you need to 
+                            <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=planting" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                                plant crops
+                            </a> first.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <form method="post" id="activity-form">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Activity Type Field -->
+                <div>
+                    <label for="{{ activity_form.activity_type.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Activity Type
+                    </label>
+                    <div class="mt-1">
+                        {{ activity_form.activity_type }}
+                    </div>
+                    {% if activity_form.activity_type.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ activity_form.activity_type.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Timestamp Field -->
+                <div>
+                    <label for="{{ activity_form.timestamp.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Date & Time
+                    </label>
+                    <div class="mt-1">
+                        {{ activity_form.timestamp }}
+                    </div>
+                    {% if activity_form.timestamp.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ activity_form.timestamp.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Dynamic Specialized Form -->
+                <div id="specialized-form-container">
+                    {% if specialized_form %}
+                        {% if activity.activity_type == 'preparation' %}
+                            {% include 'farm/partials/preparation_form.html' with form=specialized_form %}
+                        {% elif activity.activity_type == 'planting' %}
+                            {% include 'farm/partials/planting_form.html' with form=specialized_form %}
+                        {% elif activity.activity_type == 'maintenance' %}
+                            {% include 'farm/partials/maintenance_form.html' with form=specialized_form %}
+                        {% elif activity.activity_type == 'harvesting' %}
+                            {% include 'farm/partials/harvesting_form.html' with form=specialized_form %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-6">
+                    <a href="{% if activity %}{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=activity.log_id %}{% else %}{% url 'farm:activity_log_list' farm_id=farm.farm_id %}{% endif %}" 
+                       class="py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" class="py-2 px-6 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        {{ action }} Activity
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const activityTypeSelect = document.getElementById('{{ activity_form.activity_type.id_for_label }}');
+        const specializedFormContainer = document.getElementById('specialized-form-container');
+        
+        {% if not activity %}
+        // Only add the change listener for new activities, not when editing
+        activityTypeSelect.addEventListener('change', function() {
+            const selectedType = activityTypeSelect.value;
+            if (!selectedType) {
+                specializedFormContainer.innerHTML = '';
+                return;
+            }
+            
+            // Get URL parameters for field_id or crop_id if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const fieldId = urlParams.get('field_id');
+            const cropId = urlParams.get('crop_id');
+            
+            // Build the URL for fetching the form
+            let formUrl = `{% url 'farm:get_specialized_form' farm_id=farm.farm_id %}?activity_type=${selectedType}`;
+            if (fieldId && (selectedType === 'preparation' || selectedType === 'planting')) {
+                formUrl += `&field_id=${fieldId}`;
+            }
+            if (cropId && (selectedType === 'maintenance' || selectedType === 'harvesting')) {
+                formUrl += `&crop_id=${cropId}`;
+            }
+            
+            // Fetch the appropriate form based on the selected activity type
+            fetch(formUrl)
+                .then(response => response.json())
+                .then(data => {
+                    specializedFormContainer.innerHTML = data.html;
+                    
+                    // Additional setup for field or crop dependent forms
+                    setupDependentFields();
+                })
+                .catch(error => {
+                    console.error('Error fetching specialized form:', error);
+                });
+        });
+        
+        // Setup dependent fields (i.e., when selecting a field, fetch available crops)
+        function setupDependentFields() {
+            // For maintenance and harvesting, we need to connect field selection to crop selection
+            const fieldSelect = document.querySelector('[id$=field]');
+            const cropSelect = document.querySelector('[id$=crop]');
+            
+            if (fieldSelect && cropSelect) {
+                fieldSelect.addEventListener('change', function() {
+                    const selectedFieldId = fieldSelect.value;
+                    if (!selectedFieldId) {
+                        return;
+                    }
+                    
+                    // Fetch crops for the selected field
+                    fetch(`{% url 'farm:get_active_crops' farm_id=farm.farm_id %}?field_id=${selectedFieldId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear existing options
+                            cropSelect.innerHTML = '';
+                            
+                            // Add empty option
+                            const emptyOption = document.createElement('option');
+                            emptyOption.value = '';
+                            emptyOption.text = '-- Select Crop --';
+                            cropSelect.appendChild(emptyOption);
+                            
+                            // Add crop options
+                            data.crops.forEach(crop => {
+                                const option = document.createElement('option');
+                                option.value = crop.id;
+                                option.text = crop.name;
+                                cropSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching crops:', error);
+                        });
+                });
+            }
+        }
+        
+        // Trigger the change event on load if a type is already selected
+        if (activityTypeSelect.value) {
+            activityTypeSelect.dispatchEvent(new Event('change'));
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

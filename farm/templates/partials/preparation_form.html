@@ -1,0 +1,55 @@
+<!-- Land Preparation Form Fields -->
+<div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
+    <h3 class="text-lg font-medium text-gray-900">Land Preparation Details</h3>
+    
+    <!-- Field Selection -->
+    <div>
+        <label for="{{ form.field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Field
+        </label>
+        <div class="mt-1">
+            {{ form.field }}
+        </div>
+        {% if form.field.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.field.errors|striptags }}
+            </p>
+        {% endif %}
+        
+        {% if not form.field.field.queryset.exists %}
+            <p class="mt-2 text-sm text-yellow-600">
+                No fields available. <a href="#" class="text-blue-600 hover:underline" onclick="event.preventDefault(); window.location.href='{% url 'farm:field_create' farm_id=farm.farm_id %}'">Add a field</a> first.
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Equipment Used Field -->
+    <div>
+        <label for="{{ form.equipment_used.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Equipment Used
+        </label>
+        <div class="mt-1">
+            {{ form.equipment_used }}
+        </div>
+        {% if form.equipment_used.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.equipment_used.errors|striptags }}
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Description Field -->
+    <div>
+        <label for="{{ form.desc.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            Description
+        </label>
+        <div class="mt-1">
+            {{ form.desc }}
+        </div>
+        {% if form.desc.errors %}
+            <p class="mt-2 text-sm text-red-600">
+                {{ form.desc.errors|striptags }}
+            </p>
+        {% endif %}
+    </div>
+</div>

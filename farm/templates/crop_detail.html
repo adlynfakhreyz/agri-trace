@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ crop.crop_type }} - Crop Details - AgriTrace{% endblock %}
+{% block page_title %}{{ crop.crop_type }} - Crop Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex items-center">
+        <a href="{% url 'farm:field_detail' farm_id=farm.farm_id field_id=field.field_id %}" class="text-green-600 hover:text-green-700 mr-2">
+            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Field
+        </a>
+    </div>
+
+    <!-- Crop Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+                <div class="flex items-center">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-100 mr-3">
+                        <svg class="h-6 w-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                    </span>
+                    <h1 class="text-2xl font-bold text-gray-800">{{ crop.crop_type }}</h1>
+                </div>
+                <p class="text-gray-600 mt-1">
+                    <span class="font-medium">Field:</span> {{ field.name }}
+                </p>
+            </div>
+            <div class="flex space-x-2 mt-4 md:mt-0">
+                {% if not crop.is_harvested %}
+                    <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=maintenance&crop_id={{ crop.crop_id }}" 
+                       class="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Record Maintenance
+                    </a>
+                    <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=harvesting&crop_id={{ crop.crop_id }}" 
+                       class="py-2 px-4 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors">
+                        Record Harvest
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Status</p>
+                <p class="text-lg font-semibold">
+                    {% if crop.is_harvested %}
+                        <span class="text-green-600">Harvested</span>
+                    {% else %}
+                        <span class="text-yellow-600">Active</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Planting Date</p>
+                <p class="text-lg font-semibold">{{ crop.planting_date|date:"M d, Y" }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Expected Harvest</p>
+                <p class="text-lg font-semibold">
+                    {% if crop.expected_harvest_date %}
+                        {{ crop.expected_harvest_date|date:"M d, Y" }}
+                    {% else %}
+                        Not specified
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Seed Variety</p>
+                <p class="text-lg font-semibold">
+                    {% if crop.seed_variety %}
+                        {{ crop.seed_variety }}
+                    {% else %}
+                        Not specified
+                    {% endif %}
+                </p>
+            </div>
+            {% if crop.is_harvested %}
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Harvested Date</p>
+                <p class="text-lg font-semibold">{{ crop.harvest_date|date:"M d, Y" }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Planting Information -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-6">Planting Information</h2>
+        
+        {% if planting_activity %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Seed Quantity</p>
+                    <p class="text-lg font-semibold">{{ planting_activity.seed_quantity }} kg</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Seed Variety</p>
+                    <p class="text-lg font-semibold">{{ planting_activity.seed_variety }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Fertilizer Applied</p>
+                    <p class="text-lg font-semibold">{{ planting_activity.fertilizer_applied }} kg</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-right">
+                <a href="{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=planting_activity.activity_log.log_id %}" 
+                   class="text-green-600 hover:text-green-900">
+                    View Planting Activity Details
+                </a>
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center py-4">
+                No detailed planting information available.
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Maintenance Activities -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Maintenance Activities</h2>
+            {% if not crop.is_harvested %}
+                <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=maintenance&crop_id={{ crop.crop_id }}" 
+                   class="py-1.5 px-3 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    Add Maintenance
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if maintenance_activities %}
+            <div class="space-y-4">
+                {% for maintenance in maintenance_activities %}
+                    <div class="bg-gray-50 p-4 rounded-md">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                            <h3 class="text-lg font-medium text-gray-800">Maintenance Activity</h3>
+                            <span class="text-sm text-gray-500">{{ maintenance.activity_log.timestamp|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                            {% if maintenance.pesticide_applied %}
+                                <div>
+                                    <p class="text-sm text-gray-600">Pesticide Applied</p>
+                                    <p class="text-gray-800">{{ maintenance.pesticide_applied }} L</p>
+                                </div>
+                            {% endif %}
+                            {% if maintenance.irrigation_amount %}
+                                <div>
+                                    <p class="text-sm text-gray-600">Irrigation Amount</p>
+                                    <p class="text-gray-800">{{ maintenance.irrigation_amount }} L</p>
+                                </div>
+                            {% endif %}
+                            {% if maintenance.fertilizer_applied %}
+                                <div>
+                                    <p class="text-sm text-gray-600">Fertilizer Applied</p>
+                                    <p class="text-gray-800">{{ maintenance.fertilizer_applied }} kg</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-3 text-right">
+                            <a href="{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=maintenance.activity_log.log_id %}" 
+                               class="text-green-600 hover:text-green-900 text-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-6">
+                <p class="text-gray-600">No maintenance activities recorded for this crop.</p>
+                {% if not crop.is_harvested %}
+                    <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=maintenance&crop_id={{ crop.crop_id }}" 
+                       class="inline-block mt-3 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Record Maintenance
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Harvest Information -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Harvest Information</h2>
+            {% if not crop.is_harvested %}
+                <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=harvesting&crop_id={{ crop.crop_id }}" 
+                   class="py-1.5 px-3 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors">
+                    Record Harvest
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if harvest_activity %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Yield Amount</p>
+                    <p class="text-lg font-semibold">{{ harvest_activity.yield_amount }} kg</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Harvest Date</p>
+                    <p class="text-lg font-semibold">{{ crop.harvest_date|date:"M d, Y" }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p class="text-sm text-gray-600">Harvest Quality</p>
+                    <p class="text-lg font-semibold">
+                        {% if harvest_activity.harvest_quality == 1 %}
+                            Poor
+                        {% elif harvest_activity.harvest_quality == 2 %}
+                            Fair
+                        {% elif harvest_activity.harvest_quality == 3 %}
+                            Good
+                        {% elif harvest_activity.harvest_quality == 4 %}
+                            Excellent
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-right">
+                <a href="{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=harvest_activity.activity_log.log_id %}" 
+                   class="text-green-600 hover:text-green-900">
+                    View Harvest Activity Details
+                </a>
+            </div>
+        {% else %}
+            <div class="text-center py-6">
+                <p class="text-gray-600">
+                    {% if crop.is_harvested %}
+                        This crop has been marked as harvested, but no detailed harvest information is available.
+                    {% else %}
+                        This crop has not been harvested yet.
+                    {% endif %}
+                </p>
+                {% if not crop.is_harvested %}
+                    <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=harvesting&crop_id={{ crop.crop_id }}" 
+                       class="inline-block mt-3 py-2 px-4 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors">
+                        Record Harvest
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
