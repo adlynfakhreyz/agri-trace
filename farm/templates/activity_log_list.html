@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Farm Activities - {{ farm.name }} - AgriTrace{% endblock %}
+{% block page_title %}Farm Activities - {{ farm.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="flex items-center">
+                <a href="{% url 'farm:farm_detail' farm_id=farm.farm_id %}" class="text-green-600 hover:text-green-700 mr-2">
+                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Farm
+                </a>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mt-2">Activity Log for {{ farm.name }}</h1>
+        </div>
+        <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}" 
+           class="mt-4 sm:mt-0 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors inline-flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Record New Activity
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <form method="get" class="flex flex-wrap items-center">
+            <label for="type" class="mr-2 text-sm font-medium text-gray-700">Filter by activity type:</label>
+            <select id="type" name="type" onchange="this.form.submit()" 
+                    class="py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#3E8061] focus:border-[#3E8061] text-sm">
+                <option value="" {% if not activity_type %}selected{% endif %}>All Activities</option>
+                {% for value, text in activities.0.get_activity_type_choices %}
+                    <option value="{{ value }}" {% if activity_type == value %}selected{% endif %}>{{ text }}</option>
+                {% endfor %}
+            </select>
+            
+            {% if activity_type %}
+                <a href="{% url 'farm:activity_log_list' farm_id=farm.farm_id %}" class="ml-2 text-sm text-green-600 hover:text-green-700">
+                    Clear filter
+                </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Activities List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% if activities %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Activity Type
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date & Time
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Created
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for activity in activities %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full
+                                                    {% if activity.activity_type == 'planting' %}bg-green-100
+                                                    {% elif activity.activity_type == 'harvesting' %}bg-yellow-100
+                                                    {% elif activity.activity_type == 'maintenance' %}bg-blue-100
+                                                    {% elif activity.activity_type == 'preparation' %}bg-purple-100
+                                                    {% else %}bg-gray-100{% endif %}">
+                                            <svg class="h-6 w-6 
+                                                        {% if activity.activity_type == 'planting' %}text-green-600
+                                                        {% elif activity.activity_type == 'harvesting' %}text-yellow-600
+                                                        {% elif activity.activity_type == 'maintenance' %}text-blue-600
+                                                        {% elif activity.activity_type == 'preparation' %}text-purple-600
+                                                        {% else %}text-gray-600{% endif %}"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                {% if activity.activity_type == 'planting' %}
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                {% elif activity.activity_type == 'harvesting' %}
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                                {% elif activity.activity_type == 'maintenance' %}
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                {% elif activity.activity_type == 'preparation' %}
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                                {% else %}
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                {% endif %}
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ activity.get_activity_type_display }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ activity.timestamp|date:"M d, Y" }}</div>
+                                    <div class="text-sm text-gray-500">{{ activity.timestamp|time:"H:i" }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ activity.created_at|date:"M d, Y H:i" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=activity.log_id %}" 
+                                       class="text-green-600 hover:text-green-900 mr-3">View</a>
+                                    <a href="{% url 'farm:activity_log_update' farm_id=farm.farm_id log_id=activity.log_id %}" 
+                                       class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    <a href="{% url 'farm:activity_log_delete' farm_id=farm.farm_id log_id=activity.log_id %}" 
+                                       class="text-red-600 hover:text-red-900">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No activities</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    {% if activity_type %}
+                        No {{ activity_type }} activities found. Try a different filter or add a new activity.
+                    {% else %}
+                        Start recording your farm activities to track your farm's progress.
+                    {% endif %}
+                </p>
+                <div class="mt-6">
+                    <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Record New Activity
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
