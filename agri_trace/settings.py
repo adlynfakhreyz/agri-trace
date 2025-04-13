@@ -86,11 +86,11 @@ WSGI_APPLICATION = 'agri_trace.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('HOST'), 
-        'PORT': config('PORT'),
+        'NAME': os.environ.get('PODS_DB_NAME'),
+        'USER': os.environ.get('PODS_DB_USER'),
+        'PASSWORD': os.environ.get('PODS_DB_PASSWORD'),
+        'HOST': os.environ.get('PODS_DB_HOST'), 
+        'PORT': os.environ.get('PODS_DB_PORT'),
     }
 }
 
