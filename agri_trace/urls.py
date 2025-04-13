@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('main.urls')),
     path('auth/', include('authentication.urls')),
     path('marketplace/', include('marketplace.urls')),
+    path('farm/', include('farm.urls', namespace='farm')),
 ]
 
 if settings.DEBUG:
