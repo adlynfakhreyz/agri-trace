@@ -155,3 +155,99 @@ def farm_condition_update(request, farm_id):
         'farm': farm
     })
 
+@login_required
+def field_list(request, farm_id):
+    """View for listing all fields of a farm"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    fields = farm.fields.all()
+    
+    return render(request, 'field_list.html', {
+        'farm': farm,
+        'fields': fields
+    })
+
+@login_required
+def field_create(request, farm_id):
+    """View for creating a new field"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    if request.method == 'POST':
+        form = FieldForm(request.POST)
+        if form.is_valid():
+            field = form.save(commit=False)
+            field.farm = farm
+            field.save()
+            
+            messages.success(request, f"Field '{field.name}' was created successfully!")
+            return redirect('farm:field_detail', farm_id=farm.farm_id, field_id=field.field_id)
+    else:
+        form = FieldForm()
+    
+    return render(request, 'field_form.html', {
+        'form': form,
+        'farm': farm,
+        'action': 'Create'
+    })
+    
+@login_required
+def field_detail(request, farm_id, field_id):
+    """View for displaying details of a specific field"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    field = get_object_or_404(Field, field_id=field_id, farm=farm)
+    
+    crops = field.crops.all()
+    
+    active_crops = field.get_active_crops()
+    
+    preparation_activities = field.preparation_activities.all().order_by('-activity_log__timestamp')
+    
+    planting_activities = field.planting_activities.all().order_by('-activity_log__timestamp')
+    
+    return render(request, 'field_detail.html', {
+        'farm': farm,
+        'field': field,
+        'crops': crops,
+        'active_crops': active_crops,
+        'preparation_activities': preparation_activities,
+        'planting_activities': planting_activities
+    })
+
+@login_required
+def field_update(request, farm_id, field_id):
+    """View for updating an existing field"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    field = get_object_or_404(Field, field_id=field_id, farm=farm)
+    
+    if request.method == 'POST':
+        form = FieldForm(request.POST, instance=field)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Field '{field.name}' was updated successfully!")
+            return redirect('farm:field_detail', farm_id=farm.farm_id, field_id=field.field_id)
+    else:
+        form = FieldForm(instance=field)
+    
+    return render(request, 'field_form.html', {
+        'form': form,
+        'farm': farm,
+        'field': field,
+        'action': 'Update'
+    })
+
+@login_required
+def field_delete(request, farm_id, field_id):
+    """View for deleting a field"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    field = get_object_or_404(Field, field_id=field_id, farm=farm)
+    
+    if request.method == 'POST':
+        field_name = field.name
+        field.delete()
+        messages.success(request, f"Field '{field_name}' was deleted successfully!")
+        return redirect('farm:field_list', farm_id=farm.farm_id)
+    
+    return render(request, 'field_confirm_delete.html', {
+        'farm': farm,
+        'field': field
+    })
+    

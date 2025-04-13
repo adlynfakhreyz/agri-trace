@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Fields - {{ farm.name }} - AgriTrace{% endblock %}
+{% block page_title %}Fields - {{ farm.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="flex items-center">
+                <a href="{% url 'farm:farm_detail' farm_id=farm.farm_id %}" class="text-green-600 hover:text-green-700 mr-2">
+                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Farm
+                </a>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mt-2">Fields for {{ farm.name }}</h1>
+        </div>
+        <a href="{% url 'farm:field_create' farm_id=farm.farm_id %}" 
+           class="mt-4 sm:mt-0 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors inline-flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add New Field
+        </a>
+    </div>
+
+    <!-- Fields List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% if fields %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                {% for field in fields %}
+                    <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="p-5 bg-green-50 border-b border-green-100">
+                            <h2 class="text-xl font-semibold text-gray-800">{{ field.name }}</h2>
+                            <p class="text-sm text-gray-600">{{ field.size }} hectares</p>
+                        </div>
+                        <div class="p-5">
+                            {% if field.location_within_farm %}
+                                <div class="mb-3">
+                                    <span class="text-gray-700 text-sm">Location:</span>
+                                    <p class="text-gray-800">{{ field.location_within_farm }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="flex justify-between mb-3">
+                                <span class="text-gray-700 text-sm">Active Crops:</span>
+                                <span class="font-medium">{{ field.get_active_crop_count }}</span>
+                            </div>
+                            
+                            <div class="flex justify-between mb-3">
+                                <span class="text-gray-700 text-sm">Total Crops:</span>
+                                <span class="font-medium">{{ field.get_crop_count }}</span>
+                            </div>
+                            
+                            <div class="flex space-x-2 mt-5">
+                                <a href="{% url 'farm:field_detail' farm_id=farm.farm_id field_id=field.field_id %}" 
+                                   class="flex-grow py-2 px-3 bg-green-600 text-white text-center rounded-md hover:bg-green-700 transition-colors">
+                                    View Details
+                                </a>
+                                <a href="{% url 'farm:field_update' farm_id=farm.farm_id field_id=field.field_id %}" 
+                                   class="py-2 px-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No fields</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Start by adding your first field to this farm.
+                </p>
+                <div class="mt-6">
+                    <a href="{% url 'farm:field_create' farm_id=farm.farm_id %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Your First Field
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Field - {{ farm.name }} - AgriTrace{% endblock %}
+{% block page_title %}{{ action }} Field{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex items-center">
+        <a href="{% if field %}{% url 'farm:field_detail' farm_id=farm.farm_id field_id=field.field_id %}{% else %}{% url 'farm:field_list' farm_id=farm.farm_id %}{% endif %}" class="text-green-600 hover:text-green-700 mr-2">
+            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back
+        </a>
+    </div>
+
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ action }} Field for {{ farm.name }}</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Field Name -->
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Field Name
+                    </label>
+                    <div class="mt-1">
+                        {{ form.name }}
+                    </div>
+                    {% if form.name.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.name.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Field Size -->
+                <div>
+                    <label for="{{ form.size.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Size (hectares)
+                    </label>
+                    <div class="mt-1">
+                        {{ form.size }}
+                    </div>
+                    {% if form.size.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.size.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Location within Farm -->
+                <div>
+                    <label for="{{ form.location_within_farm.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Location Description (Optional)
+                    </label>
+                    <div class="mt-1">
+                        {{ form.location_within_farm }}
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Describe where this field is located within the farm (e.g., "Northeast corner", "Behind the barn")
+                    </p>
+                    {% if form.location_within_farm.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.location_within_farm.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-6">
+                    <a href="{% if field %}{% url 'farm:field_detail' farm_id=farm.farm_id field_id=field.field_id %}{% else %}{% url 'farm:field_list' farm_id=farm.farm_id %}{% endif %}" 
+                       class="py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" class="py-2 px-6 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        {{ action }} Field
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
