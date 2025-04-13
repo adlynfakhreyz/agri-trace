@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 
+from authentication.models import Farmer
 from farm.models import ActivityLog, Crop, Farm
 # Create your views here.
 
@@ -14,7 +15,8 @@ def dashboard_view(request):
     # Check if user has a farmer profile
     if not hasattr(request.user, 'farmer'):
         messages.warning(request, "You need to set up a farmer profile first.")
-        return redirect('select_role')
+        farmer, created = Farmer.objects.get_or_create(user=request.user)
+
     
     farms = Farm.objects.filter(farmer=request.user.farmer)
     farm_count = farms.count()

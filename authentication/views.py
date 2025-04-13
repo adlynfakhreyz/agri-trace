@@ -64,7 +64,7 @@ def setup_2fa(request):
             user.is_2fa_enabled = True
             user.save()
             messages.success(request, "Two-factor authentication successfully enabled!")
-            return redirect('dashboard')  # Changed from select_role to dashboard
+            return redirect('dashboard')
         else:
             messages.error(request, "Invalid verification code. Please try again.")
     
