@@ -20,5 +20,5 @@ variables:
   PODS_TESTEQ: 123123=12312312
   PODS_DEBUG: "False"
   PODS_DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
-  PODS_ALLOWED_HOSTS: "*,.cluster.local,.svc,localhost,127.0.0.1"
+  PODS_ALLOWED_HOSTS: "kelompok-71-agri-trace.pkpl.cs.ui.ac.id,.cluster.local,.svc,localhost,127.0.0.1"
   PODS_DATABASE_URL: "postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
