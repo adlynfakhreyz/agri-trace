@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ farm.name }} - Farm Details - AgriTrace{% endblock %}
+{% block page_title %}{{ farm.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Farm Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">{{ farm.name }}</h1>
+                <p class="text-gray-600">{{ farm.location }}</p>
+            </div>
+            <div class="flex space-x-2 mt-4 md:mt-0">
+                <a href="{% url 'farm:farm_update' farm_id=farm.farm_id %}" 
+                   class="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    Edit Farm
+                </a>
+                <a href="{% url 'farm:farm_delete' farm_id=farm.farm_id %}" 
+                   class="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                    Delete
+                </a>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Size</p>
+                <p class="text-lg font-semibold">{{ farm.size }} hectares</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Created</p>
+                <p class="text-lg font-semibold">{{ farm.created_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Last Updated</p>
+                <p class="text-lg font-semibold">{{ farm.updated_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Crops</p>
+                <p class="text-lg font-semibold">{{ farm.crops.count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Farm Conditions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Farm Conditions</h2>
+            <a href="{% url 'farm:farm_condition_update' farm_id=farm.farm_id %}" 
+               class="py-1.5 px-3 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+                Update Conditions
+            </a>
+        </div>
+        
+        {% if farm_condition %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Soil pH</p>
+                <p class="text-lg font-semibold">{{ farm_condition.soil_ph|default:"N/A" }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Soil Moisture</p>
+                <p class="text-lg font-semibold">{{ farm_condition.soil_moisture|default:"N/A" }}%</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Rainfall</p>
+                <p class="text-lg font-semibold">{{ farm_condition.rainfall|default:"N/A" }} mm</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Max Temp</p>
+                <p class="text-lg font-semibold">{{ farm_condition.max_daily_temp|default:"N/A" }}°C</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-md">
+                <p class="text-sm text-gray-600">Day Length</p>
+                <p class="text-lg font-semibold">{{ farm_condition.day_length|default:"N/A" }} hours</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-500 mt-4">Last updated: {{ farm_condition.updated_at|date:"M d, Y H:i" }}</p>
+        {% else %}
+        <div class="text-center py-6">
+            <p class="text-gray-600">No condition data available.</p>
+            <a href="{% url 'farm:farm_condition_update' farm_id=farm.farm_id %}" 
+               class="inline-block mt-3 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                Add Conditions
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Fields Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Fields</h2>
+            <a href="{% url 'farm:field_create' farm_id=farm.farm_id %}" 
+            class="py-1.5 px-3 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+                Add Field
+            </a>
+        </div>
+        
+        {% if farm.fields.exists %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for field in farm.fields.all %}
+                    <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="p-4 bg-green-50 border-b border-green-100">
+                            <h3 class="text-lg font-semibold text-gray-800">{{ field.name }}</h3>
+                            <p class="text-sm text-gray-600">{{ field.size }} hectares</p>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-700 text-sm">Active Crops:</span>
+                                <span class="font-medium">{{ field.get_active_crop_count }}</span>
+                            </div>
+                            <div class="mt-4 text-right">
+                                <a href="{% url 'farm:field_detail' farm_id=farm.farm_id field_id=field.field_id %}" 
+                                class="text-green-600 hover:text-green-900 text-sm">View Details →</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 text-right">
+                <a href="{% url 'farm:field_list' farm_id=farm.farm_id %}" class="text-green-600 hover:text-green-900">
+                    View all fields →
+                </a>
+            </div>
+        {% else %}
+            <div class="text-center py-6">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No fields yet</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Start by dividing your farm into different fields.
+                </p>
+                <div class="mt-6">
+                    <a href="{% url 'farm:field_create' farm_id=farm.farm_id %}" 
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Your First Field
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Recent Activities</h2>
+            <div class="flex space-x-2">
+                <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}" 
+                   class="py-1.5 px-3 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+                    Record Activity
+                </a>
+                <a href="{% url 'farm:activity_log_list' farm_id=farm.farm_id %}" 
+                   class="py-1.5 px-3 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition-colors">
+                    View All Activities
+                </a>
+            </div>
+        </div>
+        
+        {% if recent_activities %}
+        <div class="space-y-4">
+            {% for activity in recent_activities %}
+            <div class="flex items-start p-4 bg-gray-50 rounded-md">
+                <div class="bg-green-100 p-2 rounded-full mr-4">
+                    <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        {% if activity.activity_type == 'planting' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        {% elif activity.activity_type == 'harvesting' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        {% elif activity.activity_type == 'maintenance' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        {% elif activity.activity_type == 'preparation' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        {% endif %}
+                    </svg>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                        <h4 class="font-medium text-gray-800 capitalize">{{ activity.get_activity_type_display }}</h4>
+                        <span class="text-sm text-gray-500">{{ activity.timestamp|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">{{ activity.get_activity_type_display }} activity recorded</p>
+                    <div class="mt-2">
+                        <a href="{% url 'farm:activity_log_detail' farm_id=farm.farm_id log_id=activity.log_id %}" class="text-sm text-green-600 hover:text-green-800">
+                            View Details →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-4 text-right">
+            <a href="{% url 'farm:activity_log_list' farm_id=farm.farm_id %}" class="text-green-600 hover:text-green-800">
+                View all activities →
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center py-6">
+            <p class="text-gray-600">No activities recorded yet.</p>
+            <a href="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}" 
+               class="inline-block mt-3 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                Record Your First Activity
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
