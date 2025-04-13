@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Crop - AgriTrace{% endblock %}
+{% block page_title %}{{ action }} Crop{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">{{ action }} Crop</h1>
+            <span class="text-sm text-gray-600">{{ farm.name }}</span>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Crop Type Field -->
+                <div>
+                    <label for="{{ form.crop_type.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Crop Type
+                    </label>
+                    <div class="mt-1">
+                        {{ form.crop_type }}
+                    </div>
+                    {% if form.crop_type.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.crop_type.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Planting Date Field -->
+                <div>
+                    <label for="{{ form.planting_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Planting Date
+                    </label>
+                    <div class="mt-1">
+                        {{ form.planting_date }}
+                    </div>
+                    {% if form.planting_date.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.planting_date.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Expected Harvest Date Field -->
+                <div>
+                    <label for="{{ form.expected_harvest_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Expected Harvest Date (Optional)
+                    </label>
+                    <div class="mt-1">
+                        {{ form.expected_harvest_date }}
+                    </div>
+                    {% if form.expected_harvest_date.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.expected_harvest_date.errors|striptags }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-6">
+                    <a href="{% url 'farm:farm_detail' farm_id=farm.farm_id %}" 
+                       class="py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" class="py-2 px-6 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        {{ action }} Crop
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

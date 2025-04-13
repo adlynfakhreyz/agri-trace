@@ -251,3 +251,30 @@ def field_delete(request, farm_id, field_id):
         'field': field
     })
     
+@login_required
+def crop_detail(request, farm_id, crop_id):
+    """View for displaying details of a specific crop"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    crop = get_object_or_404(Crop, crop_id=crop_id, field__farm=farm)
+    
+    # Get the planting activity
+    planting_activity = crop.planting_activity
+    
+    # Get maintenance activities
+    maintenance_activities = crop.maintenance_activities.all().order_by('-activity_log__timestamp')
+    
+    # Get harvest activity if exists
+    try:
+        harvest_activity = crop.harvest_activity
+    except HarvestingLog.DoesNotExist:
+        harvest_activity = None
+    
+    return render(request, 'crop_detail.html', {
+        'farm': farm,
+        'crop': crop,
+        'field': crop.field,
+        'planting_activity': planting_activity,
+        'maintenance_activities': maintenance_activities,
+        'harvest_activity': harvest_activity
+    })
+    
