@@ -1,4 +1,5 @@
 import base64
+import uuid
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -19,7 +20,8 @@ def user_login(request):
         if user is not None:
             if user.is_2fa_enabled:
                 # Store user ID in session for 2FA verification step
-                request.session['2fa_user_id'] = user.id
+                # Convert UUID to string to ensure proper serialization
+                request.session['2fa_user_id'] = str(user.id)
                 return redirect('verify_2fa')
             else:
                 login(request, user)
@@ -102,8 +104,13 @@ def verify_2fa(request):
     
     user_id = request.session['2fa_user_id']
     try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        # Convert the user_id from session to a proper UUID object
+        user_uuid = uuid.UUID(str(user_id))
+        user = User.objects.get(id=user_uuid)
+    except (User.DoesNotExist, ValueError, TypeError):
+        # Handle both the case where user doesn't exist or the UUID is invalid
+        messages.error(request, "Authentication failed. Please try logging in again.")
+        del request.session['2fa_user_id']  # Clear the invalid session data
         return redirect('login')
     
     if request.method == 'POST':
@@ -112,7 +119,7 @@ def verify_2fa(request):
             # Clear the session and log the user in
             del request.session['2fa_user_id']
             login(request, user)
-            return redirect('dashboard')  # Removed role selection check
+            return redirect('dashboard')
         else:
             messages.error(request, "Invalid verification code. Please try again.")
     
