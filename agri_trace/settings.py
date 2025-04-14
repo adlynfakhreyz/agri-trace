@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get('PODS_DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.environ.get('DEBUG', default=0))
+DEBUG = bool(os.environ.get('PODS_DEBUG', default=0))
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("PODS_ALLOWED_HOSTS").split(",")
 
 
 # Application definition
@@ -83,14 +83,15 @@ WSGI_APPLICATION = 'agri_trace.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('HOST'), 
-        'PORT': config('PORT'),
+        'NAME': os.environ.get('PODS_DB_NAME'),
+        'USER': os.environ.get('PODS_DB_USERNAME'),
+        'PASSWORD': os.environ.get('PODS_DB_PASSWORD'),
+        'HOST': os.environ.get('PODS_DB_HOST'),
+        'PORT': os.environ.get('PODS_DB_PORT'),
     }
 }
 
@@ -153,6 +154,6 @@ MEDIA_URL = '/media/'  # URL prefix for media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Absolute filesystem path to the directory for user-uploaded 
 
 # AgriPay Integration Settings
-AGRIPAY_API_URL = 'http://localhost:8001/api'  # Change this to the actual API URL
+AGRIPAY_API_URL = os.environ.get('PODS_AGRI_PAY_RL')
 AGRIPAY_ENABLED = True
 AGRIPAY_AUTH_ENDPOINT = 'token/'
