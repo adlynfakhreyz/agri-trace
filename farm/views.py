@@ -764,7 +764,7 @@ def get_specialized_form(request, farm_id):
     else:
         return JsonResponse({'html': ''})  # No specialized form for this type
     
-    html = render(request, template, {'form': form}).content.decode('utf-8')
+    html = render(request, template, {'form': form, 'farm': farm}).content.decode('utf-8')
     return JsonResponse({'html': html})
 
 @login_required
