@@ -8,6 +8,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.views.generic import ListView
 from django.http import JsonResponse
+
+from farm.harvest_prediction import HarvestPredictionSystem
 from .models import (
     Farm, FarmCondition, Field, Crop, ActivityLog, 
     PreparationLog, PlantingLog, MaintenanceLog, HarvestingLog
@@ -582,14 +584,14 @@ def activity_log_update(request, farm_id, log_id):
     elif activity.activity_type == 'planting':
         try:
             specialized_log = activity.plantinglog
-            specialized_form = PlantingLogForm(instance=specialized_log, farm=farm)
             
             # Pre-fill crop fields if this planting activity has a crop
             try:
                 crop = specialized_log.crop
                 initial_data = {
                     'crop_type': crop.crop_type,
-                    'expected_harvest_date': crop.expected_harvest_date
+                    'expected_harvest_date': crop.expected_harvest_date,
+                    'field': specialized_log.field.field_id if specialized_log.field else None
                 }
                 specialized_form = PlantingLogForm(
                     instance=specialized_log, 
@@ -597,7 +599,7 @@ def activity_log_update(request, farm_id, log_id):
                     initial=initial_data
                 )
             except Crop.DoesNotExist:
-                pass
+                specialized_form = PlantingLogForm(instance=specialized_log, farm=farm)
                 
         except PlantingLog.DoesNotExist:
             pass
@@ -663,14 +665,25 @@ def activity_log_update(request, farm_id, log_id):
         activity_form = ActivityLogForm(instance=activity)
     
     # Set read-only for activity type (shouldn't change activity type on update)
-    activity_form.fields['activity_type'].widget.attrs['disabled'] = True
+    # activity_form.fields['activity_type'].widget.attrs['disabled'] = True
+
+    activity_form.fields['activity_type'].widget.attrs['readonly'] = True
+    activity_form.fields['activity_type'].widget.attrs['class'] += ' bg-gray-100'
+    
+    # Check if farm has any fields for preparation or planting activities
+    has_fields = farm.fields.exists()
+    
+    # Check if farm has any active crops for maintenance and harvesting
+    has_active_crops = Crop.objects.filter(field__farm=farm, is_harvested=False).exists()
     
     return render(request, 'activity_log_form.html', {
         'farm': farm,
         'activity': activity,
         'activity_form': activity_form,
         'specialized_form': specialized_form,
-        'action': 'Update'
+        'action': 'Update',
+        'has_fields': has_fields,
+        'has_active_crops': has_active_crops
     })
     
 @login_required
@@ -769,3 +782,163 @@ def get_active_crops(request, farm_id):
     crops_data = [{'id': str(crop.crop_id), 'name': f"{crop.crop_type} - {crop.field.name}"} for crop in crops]
     
     return JsonResponse({'crops': crops_data})
+
+
+@login_required
+@farmer_required
+def crop_harvest_prediction(request, farm_id, crop_id):
+    """View for displaying harvest date prediction for a specific crop"""
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    crop = get_object_or_404(Crop, crop_id=crop_id, field__farm=farm)
+    
+    # Get farm condition for more accurate prediction
+    try:
+        farm_condition = farm.condition
+    except FarmCondition.DoesNotExist:
+        farm_condition = None
+    
+    # Get the prediction
+    predicted_date = HarvestPredictionSystem.predict_harvest_date(crop, farm_condition)
+    confidence = HarvestPredictionSystem.get_confidence_level(crop, farm_condition)
+    
+    # Calculate days until harvest
+    days_until_harvest = None
+    if predicted_date:
+        days_until_harvest = (predicted_date - timezone.now().date()).days
+    
+    # Generate recommendation based on the prediction
+    recommendation = None
+    if days_until_harvest is not None:
+        if days_until_harvest < 0:
+            recommendation = "This crop is past its predicted harvest date. Consider harvesting as soon as possible to avoid over-ripening."
+        elif days_until_harvest == 0:
+            recommendation = "This crop is predicted to be ready for harvest today."
+        elif days_until_harvest <= 7:
+            recommendation = "This crop is approaching harvest time. Prepare your harvesting equipment and storage facilities."
+        elif days_until_harvest <= 30:
+            recommendation = "This crop will be ready for harvest in about a month. Continue regular maintenance activities."
+        else:
+            recommendation = "This crop still has significant growing time remaining. Focus on providing optimal growing conditions and regular maintenance."
+    
+    # Get maintenance activities for context
+    maintenance_activities = crop.maintenance_activities.all().order_by('-activity_log__timestamp')
+    
+    # Calculate impact of different factors
+    factors = []
+    
+    # Maintenance impact
+    maintenance_count = maintenance_activities.count()
+    if maintenance_count == 0:
+        factors.append({
+            'name': 'Maintenance',
+            'impact': 'Negative',
+            'description': 'No maintenance activities recorded. Regular maintenance can improve growth rates.'
+        })
+    elif maintenance_count < 3:
+        factors.append({
+            'name': 'Maintenance',
+            'impact': 'Moderate',
+            'description': f'{maintenance_count} maintenance activities recorded. More frequent maintenance may improve results.'
+        })
+    else:
+        factors.append({
+            'name': 'Maintenance',
+            'impact': 'Positive',
+            'description': f'Good maintenance record with {maintenance_count} activities. This should lead to optimal growth.'
+        })
+    
+    # Environmental factors
+    if farm_condition:
+        # Soil pH
+        if farm_condition.soil_ph is not None:
+            ph = farm_condition.soil_ph
+            if 6.0 <= ph <= 7.0:
+                factors.append({
+                    'name': 'Soil pH',
+                    'impact': 'Positive',
+                    'description': f'Current pH level ({ph}) is optimal for most crops.'
+                })
+            elif 5.5 <= ph < 6.0 or 7.0 < ph <= 7.5:
+                factors.append({
+                    'name': 'Soil pH',
+                    'impact': 'Moderate',
+                    'description': f'Current pH level ({ph}) is acceptable but not optimal.'
+                })
+            else:
+                factors.append({
+                    'name': 'Soil pH',
+                    'impact': 'Negative',
+                    'description': f'Current pH level ({ph}) is outside the optimal range for most crops.'
+                })
+        
+        # Temperature
+        if farm_condition.max_daily_temp is not None:
+            temp = farm_condition.max_daily_temp
+            if 18 <= temp <= 28:
+                factors.append({
+                    'name': 'Temperature',
+                    'impact': 'Positive',
+                    'description': f'Current temperature ({temp}°C) is in the optimal range.'
+                })
+            elif 15 <= temp < 18 or 28 < temp <= 32:
+                factors.append({
+                    'name': 'Temperature',
+                    'impact': 'Moderate',
+                    'description': f'Current temperature ({temp}°C) is acceptable but not optimal.'
+                })
+            else:
+                factors.append({
+                    'name': 'Temperature',
+                    'impact': 'Negative',
+                    'description': f'Current temperature ({temp}°C) may slow crop growth.'
+                })
+    else:
+        factors.append({
+            'name': 'Farm Conditions',
+            'impact': 'Negative',
+            'description': 'No farm condition data available. Recording conditions can improve prediction accuracy.'
+        })
+    
+    context = {
+        'farm': farm,
+        'crop': crop,
+        'predicted_date': predicted_date,
+        'days_until_harvest': days_until_harvest,
+        'confidence': confidence,
+        'recommendation': recommendation,
+        'maintenance_activities': maintenance_activities[:5],  # Show the 5 most recent activities
+        'factors': factors,
+        'field': crop.field,
+    }
+    
+    return render(request, 'crop_harvest_prediction.html', context)
+
+@login_required
+@farmer_required
+def export_farm_pdf(request, farm_id):
+    """View for exporting a farm report as PDF"""
+    # Get the farm or raise 404
+    farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
+    
+    # Get related data for the report
+    fields = farm.fields.all()
+    crops = Crop.objects.filter(field__farm=farm)
+    active_crops = crops.filter(is_harvested=False)
+    recent_activities = farm.activities.order_by('-timestamp')[:10]  # Last 10 activities
+    
+    # Get farm condition (or None)
+    try:
+        farm_condition = farm.condition
+    except FarmCondition.DoesNotExist:
+        farm_condition = None
+    
+    # Generate and return the PDF report
+    from .pdf_utils import generate_farm_report_pdf
+    return generate_farm_report_pdf(
+        farm=farm,
+        fields=fields,
+        crops=crops,
+        active_crops=active_crops,
+        recent_activities=recent_activities,
+        farm_condition=farm_condition
+    )

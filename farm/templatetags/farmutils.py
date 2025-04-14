@@ -17,3 +17,11 @@ def multiply(value, arg):
         return float(value) * float(arg)
     except ValueError:
         return 0
+    
+@register.filter
+def abs(value):
+    """Returns the absolute value"""
+    try:
+        return abs(float(value))
+    except (ValueError, TypeError):
+        return 0

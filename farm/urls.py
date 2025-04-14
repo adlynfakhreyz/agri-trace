@@ -27,4 +27,8 @@ urlpatterns = [
     
     path('farms/<uuid:farm_id>/get-specialized-form/', views.get_specialized_form, name='get_specialized_form'),
     path('farms/<uuid:farm_id>/get-active-crops/', views.get_active_crops, name='get_active_crops'),
+
+    path('farms/<uuid:farm_id>/crops/<uuid:crop_id>/predict-harvest/', views.crop_harvest_prediction, name='crop_harvest_prediction'),
+
+    path('farms/<uuid:farm_id>/export-pdf/', views.export_farm_pdf, name='export_farm_pdf'),
 ]

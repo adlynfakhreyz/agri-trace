@@ -344,6 +344,19 @@ class PlantingLogForm(forms.ModelForm):
         
         if farm:
             self.fields['field'].queryset = Field.objects.filter(farm=farm)
+        
+        # Ensure the selected field is kept when instance has a field
+        if self.instance and hasattr(self.instance, 'field') and self.instance.field:
+            # Get the field from the instance
+            instance_field = self.instance.field
+            
+            # If the farm is different from the field's farm, adjust the queryset
+            if farm and instance_field.farm != farm:
+                # Make sure the field's farm is included in the queryset
+                self.fields['field'].queryset = self.fields['field'].queryset | Field.objects.filter(pk=instance_field.pk)
+            
+            # Pre-select the field
+            self.initial['field'] = instance_field.pk
     
     def clean_crop_type(self):
         """Sanitize and validate the crop_type field"""
