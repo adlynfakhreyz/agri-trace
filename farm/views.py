@@ -24,8 +24,7 @@ def farm_list(request):
     # Check if user has a farmer profile
     if not hasattr(request.user, 'farmer'):
         messages.warning(request, "You need to set up a farmer profile first.")
-        # Redirect to select role page (assuming it exists)
-        return redirect('select_role')
+        farmer, created = Farmer.objects.get_or_create(user=request.user)
     
     farms = Farm.objects.filter(farmer=request.user.farmer)
     farm_count = farms.count()
