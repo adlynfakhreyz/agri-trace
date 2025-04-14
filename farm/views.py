@@ -287,10 +287,22 @@ def field_create(request, farm_id):
         if form.is_valid():
             field = form.save(commit=False)
             field.farm = farm
-            field.save()
             
-            messages.success(request, f"Field '{field.name}' was created successfully!")
-            return redirect('farm:field_detail', farm_id=farm.farm_id, field_id=field.field_id)
+            # Manual validation for farm size before saving
+            if field.size > farm.size:
+                form.add_error('size', "Field size cannot be larger than farm size")
+                return render(request, 'field_form.html', {
+                    'form': form,
+                    'farm': farm,
+                    'action': 'Create'
+                })
+            
+            try:
+                field.save()
+                messages.success(request, f"Field '{field.name}' was created successfully!")
+                return redirect('farm:field_detail', farm_id=farm.farm_id, field_id=field.field_id)
+            except Exception as e:
+                form.add_error(None, f"Error saving field: {str(e)}")
     else:
         form = FieldForm()
     

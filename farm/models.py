@@ -145,9 +145,11 @@ class Field(models.Model):
     def clean(self):
         """Perform model validation"""
         super().clean()
-        # Ensure field size is not larger than farm size
-        if self.size and self.farm and self.size > self.farm.size:
-            raise ValidationError({'size': 'Field size cannot be larger than farm size'})
+        
+        if hasattr(self, 'farm_id') and self.farm_id is not None:
+            # Ensure field size is not larger than farm size
+            if self.size and self.size > self.farm.size:
+                raise ValidationError({'size': 'Field size cannot be larger than farm size'})
     
     def __str__(self):
         return f"{self.name} at {self.farm.name}"
