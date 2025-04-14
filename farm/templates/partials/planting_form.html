@@ -1,4 +1,7 @@
 <!-- Planting Form Fields -->
+<form method="post" action="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}">
+    {% csrf_token %}
+
 <div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
     <h3 class="text-lg font-medium text-gray-900">Planting Details</h3>
     
