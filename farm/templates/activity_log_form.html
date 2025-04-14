@@ -96,13 +96,13 @@
                 <div id="specialized-form-container">
                     {% if specialized_form %}
                         {% if activity.activity_type == 'preparation' %}
-                            {% include 'farm/partials/preparation_form.html' with form=specialized_form %}
+                            {% include 'partials/preparation_form.html' with form=specialized_form %}
                         {% elif activity.activity_type == 'planting' %}
-                            {% include 'farm/partials/planting_form.html' with form=specialized_form %}
+                            {% include 'partials/planting_form.html' with form=specialized_form %}
                         {% elif activity.activity_type == 'maintenance' %}
-                            {% include 'farm/partials/maintenance_form.html' with form=specialized_form %}
+                            {% include 'partials/maintenance_form.html' with form=specialized_form %}
                         {% elif activity.activity_type == 'harvesting' %}
-                            {% include 'farm/partials/harvesting_form.html' with form=specialized_form %}
+                            {% include 'partials/harvesting_form.html' with form=specialized_form %}
                         {% endif %}
                     {% endif %}
                 </div>
