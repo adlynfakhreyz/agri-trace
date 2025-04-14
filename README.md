@@ -30,11 +30,12 @@ Inside your project's root directory, create a `.env` file and add the following
 
 ```env
 DJANGO_SECRET_KEY=your_secret_key
-DB_NAME=agri_trace_db
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
+PODS_DB_NAME=agri_trace_db
+PODS_DB_USERNAME=your_username
+PODS_DB_PASSWORD=your_password
+PODS_DB_HOST=localhost
+PODS_DB_PORT=5432
+PODS_ALLOWED_HOSTS=kelompok-71-agri-trace.pkpl.cs.ui.ac.id,.cluster.local,.svc,localhost,127.0.0.1
 ```
 - Make sure to replace the values with your own credentials.
 
