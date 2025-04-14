@@ -94,7 +94,9 @@ def profile(request):
 @login_required
 def edit_profile(request):
     user = request.user
-    merchant = user.merchant
+    
+    # Get or create merchant (ensures merchant always exists)
+    merchant, merchant_created = Merchant.objects.get_or_create(user=user)
     
     # Get or create buyer (ensures buyer always exists)
     buyer, buyer_created = Buyer.objects.get_or_create(merchant=merchant)
@@ -928,7 +930,7 @@ def wallet_topup(request):
     try:
         balance_data = agripay_client.get_balance()
         if 'balance' in balance_data:
-            wallet_balance = balance_data['balance']
+            wallet_balance = balance_data['probalance']
     except Exception as e:
         messages.warning(request, f"Could not retrieve wallet balance: {str(e)}")
     
