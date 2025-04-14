@@ -154,6 +154,12 @@ MEDIA_URL = '/media/'  # URL prefix for media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Absolute filesystem path to the directory for user-uploaded 
 
 # AgriPay Integration Settings
-AGRIPAY_API_URL = os.environ.get('PODS_AGRI_PAY_RL')
+AGRIPAY_API_URL = os.environ.get('PODS_AGRI_PAY_URL')
 AGRIPAY_ENABLED = True
 AGRIPAY_AUTH_ENDPOINT = 'token/'
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://kelompok-71-agri-trace.pkpl.cs.ui.ac.id',
+]
+
+CSRF_COOKIE_SECURE = True
