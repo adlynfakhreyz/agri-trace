@@ -14,8 +14,10 @@ env/
 db.sqlite3
 *.sqlite3
 
-# Ignore Django migrations (optional)
+# # Ignore Django migrations (optional)
 **/migrations/**
+
+!**/migrations/__init__.py
 
 # Ignore logs and temp files
 *.log
