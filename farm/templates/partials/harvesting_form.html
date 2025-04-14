@@ -1,70 +1,84 @@
-<!-- Harvesting Form Fields -->
-<div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
-    <h3 class="text-lg font-medium text-gray-900">Harvesting Details</h3>
+<!-- Form wrapper with CSRF token -->
+<form method="post" action="{% url 'farm:activity_log_create' farm_id=farm.farm_id %}">
+    {% csrf_token %}
     
-    <!-- Crop Selection -->
-    <div>
-        <label for="{{ form.crop.id_for_label }}" class="block text-sm font-medium text-gray-700">
-            Crop to Harvest
-        </label>
-        <div class="mt-1">
-            {{ form.crop }}
-        </div>
-        {% if form.crop.errors %}
-            <p class="mt-2 text-sm text-red-600">
-                {{ form.crop.errors|striptags }}
-            </p>
-        {% endif %}
+    <!-- Harvesting Form Fields -->
+    <div class="space-y-6 border-t border-gray-200 pt-6 mt-6">
+        <h3 class="text-lg font-medium text-gray-900">Harvesting Details</h3>
         
-        {% if not form.crop.field.queryset.exists %}
-            <p class="mt-2 text-sm text-yellow-600">
-                No active crops available for harvesting. You need to <a href="#" class="text-blue-600 hover:underline" onclick="event.preventDefault(); window.location.href='{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=planting'">plant crops</a> before recording harvest activities.
-            </p>
-        {% endif %}
-    </div>
-    
-    <!-- Yield Amount Field -->
-    <div>
-        <label for="{{ form.yield_amount.id_for_label }}" class="block text-sm font-medium text-gray-700">
-            Yield Amount (kg)
-        </label>
-        <div class="mt-1">
-            {{ form.yield_amount }}
-        </div>
-        {% if form.yield_amount.errors %}
-            <p class="mt-2 text-sm text-red-600">
-                {{ form.yield_amount.errors|striptags }}
-            </p>
-        {% endif %}
-    </div>
-    
-    <!-- Harvest Quality Field -->
-    <div>
-        <label for="{{ form.harvest_quality.id_for_label }}" class="block text-sm font-medium text-gray-700">
-            Harvest Quality
-        </label>
-        <div class="mt-1">
-            {{ form.harvest_quality }}
-        </div>
-        {% if form.harvest_quality.errors %}
-            <p class="mt-2 text-sm text-red-600">
-                {{ form.harvest_quality.errors|striptags }}
-            </p>
-        {% endif %}
-    </div>
-    
-    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
+        <!-- Crop Selection -->
+        <div>
+            <label for="{{ form.crop.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Crop to Harvest
+            </label>
+            <div class="mt-1">
+                {{ form.crop }}
             </div>
-            <div class="ml-3">
-                <p class="text-sm text-yellow-700">
-                    Note: Once harvested, this crop will be marked as completed and can no longer be used for maintenance activities.
+            {% if form.crop.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.crop.errors|striptags }}
                 </p>
+            {% endif %}
+            
+            {% if not form.crop.field.queryset.exists %}
+                <p class="mt-2 text-sm text-yellow-600">
+                    No active crops available for harvesting. You need to <a href="#" class="text-blue-600 hover:underline" onclick="event.preventDefault(); window.location.href='{% url 'farm:activity_log_create' farm_id=farm.farm_id %}?type=planting'">plant crops</a> before recording harvest activities.
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Yield Amount Field -->
+        <div>
+            <label for="{{ form.yield_amount.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Yield Amount (kg)
+            </label>
+            <div class="mt-1">
+                {{ form.yield_amount }}
+            </div>
+            {% if form.yield_amount.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.yield_amount.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Harvest Quality Field -->
+        <div>
+            <label for="{{ form.harvest_quality.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                Harvest Quality
+            </label>
+            <div class="mt-1">
+                {{ form.harvest_quality }}
+            </div>
+            {% if form.harvest_quality.errors %}
+                <p class="mt-2 text-sm text-red-600">
+                    {{ form.harvest_quality.errors|striptags }}
+                </p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                        Note: Once harvested, this crop will be marked as completed and can no longer be used for maintenance activities.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit button -->
+        <div class="pt-5">
+            <div class="flex justify-end">
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Record Harvest
+                </button>
             </div>
         </div>
     </div>
-</div>
+</form>

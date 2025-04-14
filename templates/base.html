@@ -7,137 +7,76 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        
-        body {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-        
-        .hero-green {
-            background-color: #3D8361;
-            color: #F9F9F9;
-            width: 100%;
-            min-height: 100vh;
-        }
-        
-        .btn-primary {
-            background-color: #1F3A1A;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background-color: #2B5327;
-        }
-        
-        .left-drawer {
-            background-color: #222;
-            color: #EAD7A7;
-            width: 70px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 50;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .left-drawer.expanded {
-            width: 250px;
-        }
-        
-        .left-drawer.collapsed .nav-text,
-        .left-drawer.collapsed .logo-text {
-            display: none;
-        }
-        
-        .left-drawer.collapsed .nav-item {
-            justify-content: center;
-            padding: 12px 0;
-        }
-        
-        .nav-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .nav-link {
-            color: #EAD7A7;
-            transition: all 0.2s ease;
-        }
-        
-        .nav-link:hover {
-            color: white;
-        }
-        
-        .nav-item {
-            padding: 12px 0;
-            margin: 4px 0;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        
-        .nav-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .active-nav {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-left: 3px solid #E2816A;
-        }
-        
-        .main-content {
-            flex: 1;
-            margin-left: 70px;
-            transition: all 0.3s ease;
-            width: calc(100% - 70px);
-        }
-        
-        .main-content.drawer-expanded {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-        }
-        
-        .toggle-btn {
-            position: fixed;
-            top: 1rem;
-            left: 1.5rem;
-            z-index: 100;
-            background: none;
-            border: none;
-            color: #EAD7A7;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+    <!-- Add or update these styles in your base.html -->
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    body {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+    }
+    
+    .hero-green {
+        background-color: #3D8361;
+        color: #F9F9F9;
+        width: 100%;
+        min-height: 100vh;
+    }
+    
+    .btn-primary {
+        background-color: #1F3A1A;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2B5327;
+    }
+    
+    /* Main content styles */
+    .main-content {
+        flex: 1;
+        margin-left: 70px; /* Default width for collapsed drawer */
+        transition: all 0.3s ease;
+        width: calc(100% - 70px);
+    }
+    
+    .main-content.drawer-expanded {
+        margin-left: 250px; /* Width for expanded drawer */
+        width: calc(100% - 250px);
+    }
+    
+    /* Toggle button styles */
+    .toggle-btn {
+        position: fixed;
+        top: 1rem;
+        left: 1.5rem;
+        z-index: 100;
+        background: none;
+        border: none;
+        color: #EAD7A7;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
 
-        /* For pages that need full-width content like home, about, etc. */
-        .full-page-content {
-            width: 100%;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-        }
-    </style>
+    /* Full width content styles */
+    .full-page-content {
+        width: 100%;
+        min-height: 100vh;
+        padding: 0;
+        margin: 0;
+    }
+</style>
 </head>
 
 <body>
@@ -155,127 +94,118 @@
     </div>
 
     <script>
-        // Set active navigation item
-        function setActiveNav(clickedElement) {
-            // Remove active class from all nav items
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.classList.remove('active-nav');
-            });
-            
-            // Add active class to clicked item
-            clickedElement.classList.add('active-nav');
-            
-            // Store the active item in localStorage
-            const navText = clickedElement.querySelector('.nav-text')?.textContent || '';
-            localStorage.setItem('activeNav', navText);
-        }
+    // Toggle drawer function
+    function toggleDrawer() {
+        const drawer = document.querySelector('.left-drawer');
+        const mainContent = document.querySelector('.main-content');
         
-        // Toggle drawer expansion
-        function toggleDrawer() {
-            const drawer = document.querySelector('.left-drawer');
-            const mainContent = document.querySelector('.main-content');
-            
-            drawer.classList.toggle('expanded');
-            mainContent.classList.toggle('drawer-expanded');
-            
-            // Get CSRF token from cookie
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
+        drawer.classList.toggle('collapsed');
+        mainContent.classList.toggle('drawer-expanded');
+        
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
                     }
                 }
-                return cookieValue;
             }
-            
-            // Send AJAX request to save state in session
-            const isExpanded = drawer.classList.contains('expanded');
-            const csrftoken = getCookie('csrftoken');
-            
-            // Create form data
-            const formData = new FormData();
-            formData.append('collapsed', !isExpanded);
-            
-            fetch('/toggle-drawer/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            return cookieValue;
         }
         
-        // Restore active nav on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Try to find which page we're on and highlight that nav item
-            const currentPath = window.location.pathname;
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            if (currentPath === '/' || currentPath === '') {
-                // Find Home link
-                navItems.forEach(item => {
-                    const navText = item.querySelector('.nav-text');
-                    if (navText && navText.textContent === 'Home') {
-                        item.classList.add('active-nav');
-                    }
-                });
-            } else if (currentPath.includes('dashboard')) {
-                // Find Dashboard link
-                navItems.forEach(item => {
-                    const navText = item.querySelector('.nav-text');
-                    if (navText && navText.textContent === 'Dashboard') {
-                        item.classList.add('active-nav');
-                    }
-                });
-            } else if (currentPath.includes('about')) {
-                // Find About Us link
-                navItems.forEach(item => {
-                    const navText = item.querySelector('.nav-text');
-                    if (navText && navText.textContent === 'About') {
-                        item.classList.add('active-nav');
-                    }
-                });
-            } else if (currentPath.includes('contact')) {
-                // Find Contact link
-                navItems.forEach(item => {
-                    const navText = item.querySelector('.nav-text');
-                    if (navText && navText.textContent === 'Contact') {
-                        item.classList.add('active-nav');
-                    }
-                });
-            } else if (currentPath.includes('marketplace')) {
-                // Find Marketplace link
-                navItems.forEach(item => {
-                    const navText = item.querySelector('.nav-text');
-                    if (navText && navText.textContent === 'Market') {
-                        item.classList.add('active-nav');
-                    }
-                });
-            }
-            
-            // Add click event to the action button to toggle drawer
-            const actionBtn = document.querySelector('.left-drawer .rounded-full');
-            if (actionBtn) {
-                actionBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    toggleDrawer();
-                });
-            }
+        // Send AJAX request to save state in session
+        const isCollapsed = drawer.classList.contains('collapsed');
+        const csrftoken = getCookie('csrftoken');
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('collapsed', isCollapsed);
+        
+        fetch('/toggle-drawer/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
-    </script>
+    }
+    
+    // Set active navigation item
+    function setActiveNav(clickedElement) {
+        // Remove active class from all nav items
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.classList.remove('active-nav');
+        });
+        
+        // Add active class to clicked item
+        clickedElement.classList.add('active-nav');
+        
+        // Store the active item in localStorage
+        const navText = clickedElement.querySelector('.nav-text')?.textContent || '';
+        localStorage.setItem('activeNav', navText);
+    }
+    
+    // Restore active nav on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Try to find which page we're on and highlight that nav item
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        if (currentPath === '/' || currentPath === '') {
+            // Find Home link
+            navItems.forEach(item => {
+                const navText = item.querySelector('.nav-text');
+                if (navText && navText.textContent === 'Home') {
+                    item.classList.add('active-nav');
+                }
+            });
+        } else if (currentPath.includes('dashboard')) {
+            // Find Dashboard link
+            navItems.forEach(item => {
+                const navText = item.querySelector('.nav-text');
+                if (navText && navText.textContent === 'Dashboard') {
+                    item.classList.add('active-nav');
+                }
+            });
+        } else if (currentPath.includes('about')) {
+            // Find About Us link
+            navItems.forEach(item => {
+                const navText = item.querySelector('.nav-text');
+                if (navText && navText.textContent === 'About') {
+                    item.classList.add('active-nav');
+                }
+            });
+        } else if (currentPath.includes('contact')) {
+            // Find Contact link
+            navItems.forEach(item => {
+                const navText = item.querySelector('.nav-text');
+                if (navText && navText.textContent === 'Contact') {
+                    item.classList.add('active-nav');
+                }
+            });
+        } else if (currentPath.includes('marketplace')) {
+            // Find Marketplace link
+            navItems.forEach(item => {
+                const navText = item.querySelector('.nav-text');
+                if (navText && navText.textContent === 'Market') {
+                    item.classList.add('active-nav');
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
