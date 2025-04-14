@@ -13,36 +13,41 @@ def home_view(request):
 def dashboard_view(request):
     """Dashboard view showing farms overview"""
     # Check if user has a farmer profile
-    if not hasattr(request.user, 'farmer'):
-        messages.warning(request, "You need to set up a farmer profile first.")
-        farmer, created = Farmer.objects.get_or_create(user=request.user)
-
-    
-    farms = Farm.objects.filter(farmer=request.user.farmer)
-    farm_count = farms.count()
-    
-    if farm_count == 0:
-        # If no farms, suggest creating one
+    if hasattr(request.user, 'farmer'):    
+        farms = Farm.objects.filter(farmer=request.user.farmer)
+        farm_count = farms.count()
+        
+        if farm_count == 0:
+            # If no farms, suggest creating one
+            return render(request, 'dashboard.html', {
+                'farm_count': 0,
+                'has_farms': False
+            })
+        
+        # Get total crops 
+        total_crops = Crop.objects.filter(field__farm__in=farms).count()
+        
+        # Get some recent activities
+        recent_activities = ActivityLog.objects.filter(
+            farm__farmer=request.user.farmer
+        ).order_by('-timestamp')[:5]
+        
         return render(request, 'dashboard.html', {
+            'farms': farms,
+            'farm_count': farm_count,
+            'total_crops': total_crops,
+            'recent_activities': recent_activities,
+            'has_farms': True
+        })
+    else:
+        return render(request, 'dashboard.html', {
+            'farms': None,
             'farm_count': 0,
+            'total_crops': 0,
+            'recent_activities': None,
             'has_farms': False
         })
-    
-    # Get total crops 
-    total_crops = Crop.objects.filter(field__farm__in=farms).count()
-    
-    # Get some recent activities
-    recent_activities = ActivityLog.objects.filter(
-        farm__farmer=request.user.farmer
-    ).order_by('-timestamp')[:5]
-    
-    return render(request, 'dashboard.html', {
-        'farms': farms,
-        'farm_count': farm_count,
-        'total_crops': total_crops,
-        'recent_activities': recent_activities,
-        'has_farms': True
-    })
+        
 
 def about_us_view(request):
     return render(request, 'about_us.html')
