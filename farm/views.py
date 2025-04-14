@@ -1,8 +1,8 @@
 from django.db.models import Count
 from authentication.models import Farmer
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from authentication.decorators import farmer_required
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
@@ -19,13 +19,9 @@ from .forms import (
 )
 
 @login_required
+@farmer_required
 def farm_list(request):
     """View for listing all farms owned by the current user's farmer profile"""
-    # Check if user has a farmer profile
-    if not hasattr(request.user, 'farmer'):
-        messages.warning(request, "You need to set up a farmer profile first.")
-        farmer, created = Farmer.objects.get_or_create(user=request.user)
-    
     farms = Farm.objects.filter(farmer=request.user.farmer)
     farm_count = farms.count()
     
@@ -42,20 +38,12 @@ def farm_list(request):
 def farm_create(request):
     """View for creating a new farm"""
     # Check if user has a farmer profile
-    if not hasattr(request.user, 'farmer'):
-        try:
-            # Try to create a farmer profile if it doesn't exist
-            farmer = Farmer.objects.create(user=request.user)
-        except Exception as e:
-            messages.error(request, f"Failed to create farmer profile: {str(e)}")
-            return redirect('home')
-    
     if request.method == 'POST':
+        farmer, created = Farmer.objects.get_or_create(user=request.user)
         form = FarmForm(request.POST)
         if form.is_valid():
-            # Create farm but don't save to DB yet
             farm = form.save(commit=False)
-            farm.farmer = request.user.farmer
+            farm.farmer = farmer
             farm.save()
             
             # Create default farm condition
@@ -72,6 +60,7 @@ def farm_create(request):
     })
 
 @login_required
+@farmer_required
 def farm_detail(request, farm_id):
     """View for displaying details of a specific farm with analytics"""
     # Get the farm or raise 404
@@ -209,6 +198,7 @@ def farm_detail(request, farm_id):
     })
 
 @login_required
+@farmer_required
 def farm_update(request, farm_id):
     """View for updating an existing farm"""
     # Get the farm or raise 404
@@ -230,6 +220,7 @@ def farm_update(request, farm_id):
     })
 
 @login_required
+@farmer_required
 def farm_delete(request, farm_id):
     """View for deleting a farm"""
     # Get the farm or raise 404
@@ -244,6 +235,7 @@ def farm_delete(request, farm_id):
     return render(request, 'farm_confirm_delete.html', {'farm': farm})
 
 @login_required
+@farmer_required
 def farm_condition_update(request, farm_id):
     """View for updating farm conditions"""
     # Get the farm or raise 404
@@ -267,6 +259,7 @@ def farm_condition_update(request, farm_id):
     })
 
 @login_required
+@farmer_required
 def field_list(request, farm_id):
     """View for listing all fields of a farm"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -278,6 +271,7 @@ def field_list(request, farm_id):
     })
 
 @login_required
+@farmer_required
 def field_create(request, farm_id):
     """View for creating a new field"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -301,6 +295,7 @@ def field_create(request, farm_id):
     })
     
 @login_required
+@farmer_required
 def field_detail(request, farm_id, field_id):
     """View for displaying details of a specific field"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -324,6 +319,7 @@ def field_detail(request, farm_id, field_id):
     })
 
 @login_required
+@farmer_required
 def field_update(request, farm_id, field_id):
     """View for updating an existing field"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -346,6 +342,7 @@ def field_update(request, farm_id, field_id):
     })
 
 @login_required
+@farmer_required
 def field_delete(request, farm_id, field_id):
     """View for deleting a field"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -363,6 +360,7 @@ def field_delete(request, farm_id, field_id):
     })
     
 @login_required
+@farmer_required
 def crop_detail(request, farm_id, crop_id):
     """View for displaying details of a specific crop"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -390,6 +388,7 @@ def crop_detail(request, farm_id, crop_id):
     })
     
 @login_required
+@farmer_required
 def activity_log_list(request, farm_id):
     """View for listing all activity logs for a specific farm"""
     # Get the farm or raise 404
@@ -410,6 +409,7 @@ def activity_log_list(request, farm_id):
     })
 
 @login_required
+@farmer_required
 @transaction.atomic
 def activity_log_create(request, farm_id):
     """View for creating a new activity log with the updated workflow"""
@@ -507,6 +507,7 @@ def activity_log_create(request, farm_id):
     })
     
 @login_required
+@farmer_required
 def activity_log_detail(request, farm_id, log_id):
     """View for displaying details of a specific activity log"""
     # Get the farm or raise 404
@@ -549,6 +550,7 @@ def activity_log_detail(request, farm_id, log_id):
     })
 
 @login_required
+@farmer_required
 @transaction.atomic
 def activity_log_update(request, farm_id, log_id):
     """View for updating an existing activity log"""
@@ -660,6 +662,7 @@ def activity_log_update(request, farm_id, log_id):
     })
     
 @login_required
+@farmer_required
 def activity_log_delete(request, farm_id, log_id):
     """View for deleting an activity log"""
     # Get the farm or raise 404
@@ -711,6 +714,7 @@ def activity_log_delete(request, farm_id, log_id):
     })
 
 @login_required
+@farmer_required
 def get_specialized_form(request, farm_id):
     """AJAX view to get the specialized form based on activity type"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
@@ -739,6 +743,7 @@ def get_specialized_form(request, farm_id):
     return JsonResponse({'html': html})
 
 @login_required
+@farmer_required
 def get_active_crops(request, farm_id):
     """AJAX view to get active crops for a farm"""
     farm = get_object_or_404(Farm, farm_id=farm_id, farmer=request.user.farmer)
