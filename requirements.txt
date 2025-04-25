@@ -11,3 +11,4 @@ qrcode[pil]
 django-widget-tweaks
 pytz
 reportlab
+python-dotenv
